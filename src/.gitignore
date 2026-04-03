@@ -1,0 +1,34 @@
+# Backend - Diupload ke Google Apps Script dengan clasp, bukan Github
+Backend/
+appsscript.json
+.clasp.json
+
+# Cloudflare - Deploy terpisah ke Cloudflare
+Cloudflare/
+
+# System files
+.DS_Store
+Thumbs.db
+*.log
+
+# Dependencies
+node_modules/
+package-lock.json
+yarn.lock
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+.AppleDouble
+.LSOverride

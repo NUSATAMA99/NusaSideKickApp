@@ -1,0 +1,1944 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Sidekick_ System</title>
+    
+    <!-- Favicon & PWA Icons (Updated with Cache Buster ?v=1) -->
+    <link rel="shortcut icon" href="sidekick_favicon.png?v=1" type="image/png">
+    <link rel="icon" type="image/png" href="sidekick_favicon.png?v=1">
+    <link rel="apple-touch-icon" href="sidekick_favicon.png?v=1">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Aref+Ruqaa:wght@400;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <style>
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            -webkit-tap-highlight-color: transparent; 
+        }
+        .pwa-height { height: 100dvh; }
+        .bottom-sheet { transform: translateY(100%); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1); }
+        .bottom-sheet.open { transform: translateY(0); }
+        .safe-bottom { padding-bottom: calc(1.5rem + env(safe-area-inset-bottom)); }
+        
+        .glass-dock { 
+            background: rgba(255, 255, 255, 0.8); 
+            backdrop-filter: blur(20px); 
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 10px 40px -10px rgba(0,0,0,0.1);
+        }
+        ::-webkit-scrollbar { display: none; }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .animate-slide-up { animation: slideUp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.2) forwards; }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+        .animate-float { animation: float 3s ease-in-out infinite; }
+        @keyframes pulse-glow { 0%, 100% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4); } 50% { box-shadow: 0 0 20px 5px rgba(99, 102, 241, 0.2); } }
+        .animate-glow { animation: pulse-glow 2s infinite; }
+
+        .btn-arcade { transition: all 0.15s ease; box-shadow: 0 6px 0 0 rgba(0, 0, 0, 0.15); }
+        .btn-arcade:active { transform: translateY(6px); box-shadow: 0 0px 0 0 rgba(0, 0, 0, 0.15); }
+        .btn-arcade-blue { box-shadow: 0 6px 0 0 #3730a3; }
+        .btn-arcade-blue:active { transform: translateY(6px); box-shadow: 0 0px 0 0 #3730a3; }
+        .btn-arcade-green { box-shadow: 0 6px 0 0 #065f46; }
+        .btn-arcade-green:active { transform: translateY(6px); box-shadow: 0 0px 0 0 #065f46; }
+        .btn-arcade-dark { box-shadow: 0 6px 0 0 #0f172a; }
+        .btn-arcade-dark:active { transform: translateY(6px); box-shadow: 0 0px 0 0 #0f172a; }
+
+        .chart-container { position: relative; height: 250px; width: 100%; }
+        input[type="date"]::-webkit-calendar-picker-indicator, input[type="time"]::-webkit-calendar-picker-indicator { background: transparent; bottom: 0; color: transparent; cursor: pointer; left: 0; position: absolute; right: 0; top: 0; width: auto; }
+        .table-scroll::-webkit-scrollbar { display: block; height: 6px; }
+        .table-scroll::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
+        .table-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+
+        .swal-game-popup { border-radius: 2rem !important; padding: 1.5rem !important; }
+        .swal-game-title { font-family: 'Plus Jakarta Sans', sans-serif !important; font-weight: 900 !important; font-size: 1.5rem !important; }
+
+        .font-arabic { font-family: 'Aref Ruqaa', serif; }
+        .quote-wrapper { position: absolute; top: 0; left: 0; right: 0; bottom: 0; overflow: hidden; display: flex; align-items: center; justify-content: center; z-index: 0; pointer-events: none; }
+        .quote-text { opacity: 0; transform: translateX(60vw); transition: opacity 3s ease-in-out, transform 15s linear; white-space: nowrap; font-size: 7rem; color: rgba(165, 180, 252, 0.05); }
+        @media (min-width: 768px) { .quote-text { font-size: 12rem; } }
+        .quote-text.show { opacity: 1; transform: translateX(-60vw); }
+    </style>
+</head>
+<body class="text-slate-900 overflow-hidden pwa-height flex flex-col bg-slate-900 transition-colors duration-700">
+
+    <!-- LOGIN PAGE -->
+    <div id="loginPage" class="fixed top-0 left-0 right-0 bottom-0 w-full h-[100dvh] z-[100] flex flex-col items-center justify-center p-8 overflow-hidden bg-slate-900">
+        <div class="quote-wrapper"><p id="arabicQuote" class="font-arabic quote-text drop-shadow-[0_0_15px_rgba(165,180,252,0.1)]" dir="rtl"></p></div>
+        
+        <div class="absolute -top-[15%] -left-[10%] w-[70vw] h-[70vw] min-w-[350px] min-h-[350px] max-w-[600px] max-h-[600px] bg-fuchsia-600 rounded-full filter blur-[100px] opacity-40 animate-float pointer-events-none"></div>
+        <div class="absolute -bottom-[15%] -right-[10%] w-[70vw] h-[70vw] min-w-[350px] min-h-[350px] max-w-[600px] max-h-[600px] bg-cyan-500 rounded-full filter blur-[100px] opacity-40 animate-float pointer-events-none" style="animation-delay: 1.5s;"></div>
+
+        <div class="mb-10 text-center animate-slide-up z-10 mt-auto relative">
+            <div class="w-28 h-28 rounded-[2.5rem] flex items-center justify-center mx-auto mb-6 transition-transform hover:scale-110 duration-500 shadow-2xl shadow-indigo-500/50 bg-white p-1">
+                <img src="https://i.imgur.com/n7oQNAi.jpg" alt="Logo" class="w-full h-full object-cover rounded-[2.2rem]">
+            </div>
+            <h1 class="text-3xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-indigo-400 to-fuchsia-400 uppercase drop-shadow-lg leading-tight">NUSATAMA X<br>SIDEKICKER</h1>
+            <p class="text-indigo-200 font-bold mt-2 text-xs tracking-[0.3em] uppercase opacity-80">Command Center</p>
+        </div>
+        
+        <div class="w-full max-w-xs space-y-5 animate-slide-up z-10 mb-auto relative" style="animation-delay: 0.2s">
+            <div class="relative">
+                <input type="password" id="pinInput" placeholder="ENTER ACCESS PIN" inputmode="numeric" maxlength="6" 
+                    class="w-full text-center text-xl font-black tracking-[0.4em] py-5 rounded-3xl bg-slate-800/50 border-2 border-indigo-500/30 text-white focus:border-cyan-400 focus:bg-slate-800 outline-none transition-all shadow-inner placeholder:text-slate-500 placeholder:text-xs placeholder:tracking-widest">
+            </div>
+            <button onclick="doLogin()" class="w-full bg-gradient-to-r from-indigo-500 to-fuchsia-500 text-white py-5 rounded-3xl font-black text-lg btn-arcade btn-arcade-blue tracking-wider flex justify-center items-center gap-2 uppercase">
+                KickStart! <i data-lucide="rocket" class="w-5 h-5"></i>
+            </button>
+        </div>
+    </div>
+
+    <div id="mainApp" class="hidden flex-1 flex flex-col h-full overflow-hidden bg-slate-50">
+        <header class="px-8 pt-10 pb-4 flex justify-between items-end bg-white border-b border-slate-100 shadow-sm z-10">
+            <div>
+                <p id="connStatus" class="flex items-center gap-1.5 text-[10px] font-black text-indigo-500 uppercase tracking-widest mb-1"><span class="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></span> Uplink Established</p>
+                <h2 id="pageTitle" class="text-3xl font-black tracking-tight text-slate-800">Dashboard</h2>
+            </div>
+            <button onclick="loadData()" class="w-12 h-12 bg-slate-100 rounded-[1.25rem] border border-slate-200 flex items-center justify-center active:scale-90 transition-all hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200">
+                <i data-lucide="radar" class="w-5 h-5"></i>
+            </button>
+        </header>
+
+        <main id="scrollArea" class="flex-1 overflow-y-auto px-6 py-6 space-y-8 pb-32">
+            
+            <div id="homePage" class="view-content space-y-8">
+                <div class="space-y-4">
+                    <div class="bg-gradient-to-br from-indigo-600 via-purple-600 to-fuchsia-500 p-6 rounded-[2.5rem] text-white shadow-xl shadow-purple-500/30 flex justify-between items-center group relative overflow-hidden animate-glow">
+                        <div class="absolute -right-6 -top-6 w-32 h-32 bg-white/10 rounded-full blur-2xl group-hover:bg-white/20 transition-all"></div>
+                        <div class="z-10">
+                            <p class="text-[10px] font-black uppercase tracking-widest text-fuchsia-200 flex items-center gap-1"><i data-lucide="gem" class="w-3 h-3"></i> Total Earn  / Income</p>
+                            <h3 id="statIncome" class="text-3xl font-black mt-1 tracking-tight drop-shadow-md">Rp --</h3>
+                        </div>
+                        <div class="bg-white/20 p-4 rounded-3xl transition-transform group-hover:rotate-12 group-hover:scale-110 z-10 backdrop-blur-sm">
+                            <i data-lucide="coins" class="w-8 h-8 text-yellow-300"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white p-6 rounded-[2.5rem] border-2 border-orange-100 shadow-md text-slate-900 flex justify-between items-center group hover:border-orange-300 transition-colors">
+                        <div>
+                            <p class="text-[10px] font-black uppercase tracking-widest text-orange-400 flex items-center gap-1"><i data-lucide="target" class="w-3 h-3"></i> Outstanding Quests (A/R)</p>
+                            <h3 id="statReceivable" class="text-2xl font-black mt-1 text-orange-600 tracking-tight">Rp --</h3>
+                        </div>
+                        <div class="bg-orange-50 p-4 rounded-3xl transition-transform group-hover:scale-110 group-hover:-rotate-12 text-orange-500">
+                            <i data-lucide="crosshair" class="w-7 h-7"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="bg-slate-800 p-5 rounded-[2rem] text-white shadow-lg relative overflow-hidden group">
+                        <div class="absolute inset-0 bg-gradient-to-t from-slate-900 to-transparent opacity-80"></div>
+                        <div class="relative z-10">
+                            <p class="text-[9px] font-black text-cyan-400 uppercase tracking-widest mb-1"><i data-lucide="flame" class="inline w-3 h-3"></i> Active Quests</p>
+                            <h3 id="statOngoing" class="text-2xl font-black">--</h3>
+                        </div>
+                    </div>
+                    <div class="bg-white p-5 rounded-[2rem] border-2 border-slate-100 shadow-sm group hover:border-cyan-200 transition-colors">
+                        <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1"><i data-lucide="calendar-check" class="inline w-3 h-3"></i> Monthly Run</p>
+                        <h3 id="statMonthly" class="text-2xl font-black text-indigo-600">--</h3>
+                    </div>
+                </div>
+
+                <div>
+                    <h4 class="font-black text-lg mb-4 px-2 tracking-tight flex items-center gap-2"><i data-lucide="history" class="w-5 h-5 text-indigo-500"></i> Recent Activity Log</h4>
+                    <div id="projectContainer" class="space-y-4">
+                        <div class="animate-pulse flex gap-4 p-5 bg-white rounded-[2rem] border border-slate-100">
+                            <div class="w-14 h-14 bg-slate-100 rounded-2xl"></div>
+                            <div class="flex-1 space-y-2 py-1"><div class="h-3 bg-slate-100 rounded w-3/4"></div><div class="h-2 bg-slate-100 rounded w-1/2"></div></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VENDOR BANK VIEW (NEW) -->
+            <div id="vendorBankPage" class="view-content hidden space-y-6 animate-slide-up">
+                <button onclick="openAddVendorSheet()" class="w-full bg-gradient-to-r from-emerald-500 to-teal-500 text-white p-8 rounded-[2.5rem] flex items-center justify-between shadow-xl shadow-teal-500/30 btn-arcade btn-arcade-green">
+                    <div class="text-left">
+                        <p class="font-black text-xl text-white">Register Vendor 🏭</p>
+                        <p class="text-[10px] opacity-80 font-bold uppercase tracking-widest mt-1 text-teal-100">Add to Vendor Library</p>
+                    </div>
+                    <div class="bg-white/20 p-3 rounded-2xl backdrop-blur-sm"><i data-lucide="building-2" class="w-8 h-8 text-white"></i></div>
+                </button>
+                
+                <div class="bg-white rounded-[2.5rem] border-2 border-slate-100 shadow-sm flex flex-col pt-6 pb-2">
+                    <div class="px-6 pb-4 flex justify-between items-center border-b border-slate-100">
+                        <h4 class="font-black text-slate-800 flex items-center gap-2">
+                            <i data-lucide="library" class="w-5 h-5 text-indigo-600"></i> Vendor & Ally Bank
+                        </h4>
+                        <i data-lucide="filter" class="w-4 h-4 text-slate-400"></i>
+                    </div>
+                    
+                    <!-- Multi-tag Filter Area -->
+                    <div class="px-6 py-4 bg-slate-50 border-b border-slate-100">
+                        <p class="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-3">Filter By Tags</p>
+                        <div id="vendorFilterTags" class="flex gap-2 overflow-x-auto hide-scrollbar pb-2">
+                            <!-- Tags will be dynamically loaded here -->
+                        </div>
+                    </div>
+
+                    <!-- Vendor List Container -->
+                    <div id="vendorListContainer" class="p-6 space-y-4">
+                        <div class="animate-pulse flex gap-4 p-5 bg-slate-50 rounded-[2rem] border border-slate-100">
+                            <div class="flex-1 space-y-2 py-1"><div class="h-3 bg-slate-200 rounded w-1/2"></div><div class="h-2 bg-slate-200 rounded w-1/4"></div></div>
+                            <div class="w-10 h-10 bg-slate-200 rounded-2xl"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PAY VIEW -->
+            <div id="payPage" class="view-content hidden space-y-6">
+                <div class="flex bg-slate-200/50 p-1.5 rounded-[1.5rem] mb-2 shadow-inner">
+                    <button onclick="switchPayTab('client')" id="tabBtnClient" class="flex-1 py-3.5 text-[11px] font-black uppercase tracking-wider rounded-[1.25rem] bg-white shadow-md text-indigo-600 transition-all scale-100 relative">
+                        Client Pay <span class="absolute top-1 right-2 w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></span>
+                    </button>
+                    <button onclick="switchPayTab('vendor')" id="tabBtnVendor" class="flex-1 py-3.5 text-[11px] font-black uppercase tracking-wider rounded-[1.25rem] text-slate-400 hover:text-slate-700 transition-all scale-95">
+                        Vendor Pay
+                    </button>
+                </div>
+
+                <!-- TAB CONTENT: CLIENT PAYMENT -->
+                <div id="clientTabContent" class="space-y-6 animate-slide-up">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-emerald-500 p-6 rounded-[2rem] text-white shadow-lg shadow-emerald-200 relative overflow-hidden">
+                            <i data-lucide="check-circle" class="absolute -right-4 -bottom-4 w-20 h-20 opacity-20 text-white"></i>
+                            <p class="text-[9px] font-black uppercase opacity-90 flex items-center gap-1">💰 Quest Payment Success 💰</p>
+                            <h3 id="statPaid" class="text-2xl font-black mt-2">--</h3>
+                        </div>
+                        <div class="bg-white p-6 rounded-[2rem] border-2 border-orange-100 text-orange-600 shadow-sm relative overflow-hidden">
+                            <i data-lucide="alert-triangle" class="absolute -right-4 -bottom-4 w-20 h-20 opacity-5 text-orange-600"></i>
+                            <p class="text-[9px] font-black uppercase text-orange-400 flex items-center gap-1">⚠️ Quest UnPaid ⚠️</p>
+                            <h3 id="statUnpaid" class="text-2xl font-black mt-2">--</h3>
+                        </div>
+                    </div>
+                    
+                    <button onclick="openPaySheet()" class="w-full bg-slate-900 text-white p-8 rounded-[2.5rem] flex items-center justify-between btn-arcade btn-arcade-dark">
+                        <div class="text-left">
+                            <p class="font-black text-xl text-cyan-400">Client Payment 💸</p>
+                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Sync to Revenue Vault</p>
+                        </div>
+                        <div class="bg-slate-800 p-3 rounded-2xl border border-slate-700"><i data-lucide="download" class="w-6 h-6 text-white"></i></div>
+                    </button>
+
+                    <!-- BANK ACCOUNTS CLIPBOARD -->
+                    <div class="bg-white rounded-[2.5rem] border-2 border-slate-100 shadow-sm p-6 mt-4 transition-all">
+                        <div class="flex justify-between items-center cursor-pointer select-none" onclick="toggleBankList()">
+                            <h4 class="font-black text-slate-800 flex items-center gap-2">
+                                <i data-lucide="landmark" class="w-5 h-5 text-indigo-500"></i> Vault Addresses
+                            </h4>
+                            <div class="flex items-center gap-2 bg-indigo-50 px-3 py-1.5 rounded-full border border-indigo-100">
+                                <p class="text-[9px] font-black text-indigo-600 uppercase tracking-widest">View All</p>
+                                <i data-lucide="chevron-down" id="bankListIcon" class="w-4 h-4 text-indigo-600 transition-transform duration-300"></i>
+                            </div>
+                        </div>
+                        
+                        <div id="bankList" class="space-y-3 hidden mt-5 pt-5 border-t border-slate-100">
+                            <!-- Detail Bank Hardcoded -->
+                            
+                            <!-- BCA Operasional -->
+                            <div class="flex items-center justify-between p-4 rounded-3xl bg-slate-50 border border-slate-200 hover:border-indigo-300 transition-colors hover:shadow-md group">
+                                <div class="flex items-center gap-4">
+                                    <div class="w-12 h-12 rounded-2xl bg-white flex items-center justify-center shadow-sm border border-slate-200 p-2 overflow-hidden transition-transform group-hover:scale-110">
+                                        <img src="https://upload.wikimedia.org/wikipedia/commons/5/5c/Bank_Central_Asia.svg" class="w-full h-full object-contain" alt="BCA">
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-black text-slate-800">7300377283</p>
+                                        <p class="text-[10px] font-bold text-slate-500">Nugraha Satria Utama <span class="opacity-50">|</span> BCA Operasional</p>
+                                    </div>
+                                </div>
+                                <button onclick="copyToClipboard('7300377283')" class="p-3 text-slate-400 hover:text-indigo-600 hover:bg-indigo-100 bg-white rounded-2xl shadow-sm border border-slate-200 active:scale-90 transition-all">
+                                    <i data-lucide="copy" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+
+                            <!-- BSI -->
+                            <div class="flex items-center justify-between p-4 rounded-3xl bg-slate-50 border border-slate-200 hover:border-emerald-300 transition-colors hover:shadow-md group">
+                                <div class="flex items-center gap-4">
+                                    <div class="w-12 h-12 rounded-2xl bg-white flex items-center justify-center shadow-sm border border-slate-200 p-2 overflow-hidden transition-transform group-hover:scale-110">
+                                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a0/Bank_Syariah_Indonesia.svg/1200px-Bank_Syariah_Indonesia.svg.png" class="w-full h-full object-contain" alt="BSI">
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-black text-slate-800">1129014614</p>
+                                        <p class="text-[10px] font-bold text-slate-500">Nugraha Satria Utama <span class="opacity-50">|</span> BSI</p>
+                                    </div>
+                                </div>
+                                <button onclick="copyToClipboard('1129014614')" class="p-3 text-slate-400 hover:text-emerald-600 hover:bg-emerald-100 bg-white rounded-2xl shadow-sm border border-slate-200 active:scale-90 transition-all">
+                                    <i data-lucide="copy" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+
+                            <!-- Mandiri -->
+                            <div class="flex items-center justify-between p-4 rounded-3xl bg-slate-50 border border-slate-200 hover:border-yellow-400 transition-colors hover:shadow-md group">
+                                <div class="flex items-center gap-4">
+                                    <div class="w-12 h-12 rounded-2xl bg-white flex items-center justify-center shadow-sm border border-slate-200 p-1 overflow-hidden transition-transform group-hover:scale-110">
+                                        <img src="https://upload.wikimedia.org/wikipedia/commons/a/ad/Bank_Mandiri_logo_2016.svg" class="w-full h-full object-contain scale-110" alt="Mandiri">
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-black text-slate-800">1640005915717</p>
+                                        <p class="text-[10px] font-bold text-slate-500">Nugraha Satria Utama <span class="opacity-50">|</span> Mandiri - Finance Nusatama</p>
+                                    </div>
+                                </div>
+                                <button onclick="copyToClipboard('1640005915717')" class="p-3 text-slate-400 hover:text-yellow-600 hover:bg-yellow-100 bg-white rounded-2xl shadow-sm border border-slate-200 active:scale-90 transition-all">
+                                    <i data-lucide="copy" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+
+                            <!-- Bank Jago - Bikinsesukamu -->
+                            <div class="flex items-center justify-between p-4 rounded-3xl bg-slate-50 border border-slate-200 hover:border-orange-300 transition-colors hover:shadow-md group">
+                                <div class="flex items-center gap-4">
+                                    <div class="w-12 h-12 rounded-2xl bg-white flex items-center justify-center shadow-sm border border-slate-200 p-1.5 overflow-hidden transition-transform group-hover:scale-110">
+                                        <img src="https://miro.medium.com/v2/1*3gueqKwW0-kkw3rOOXh4_w.jpeg" class="w-full h-full object-contain rounded-xl" alt="Bank Jago">
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-black text-slate-800">105784010178</p>
+                                        <p class="text-[10px] font-bold text-slate-500">Nugraha Satria Utama <span class="opacity-50">|</span> Jago - Bikinsesukamu</p>
+                                    </div>
+                                </div>
+                                <button onclick="copyToClipboard('105784010178')" class="p-3 text-slate-400 hover:text-orange-600 hover:bg-orange-100 bg-white rounded-2xl shadow-sm border border-slate-200 active:scale-90 transition-all">
+                                    <i data-lucide="copy" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+
+                            <!-- Bank Jago - Epicslab -->
+                            <div class="flex items-center justify-between p-4 rounded-3xl bg-slate-50 border border-slate-200 hover:border-orange-300 transition-colors hover:shadow-md group">
+                                <div class="flex items-center gap-4">
+                                    <div class="w-12 h-12 rounded-2xl bg-white flex items-center justify-center shadow-sm border border-slate-200 p-1.5 overflow-hidden transition-transform group-hover:scale-110">
+                                        <img src="https://miro.medium.com/v2/1*3gueqKwW0-kkw3rOOXh4_w.jpeg" class="w-full h-full object-contain rounded-xl" alt="Bank Jago">
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-black text-slate-800">105974804727</p>
+                                        <p class="text-[10px] font-bold text-slate-500">Nugraha Satria Utama <span class="opacity-50">|</span> Jago - Epicslab</p>
+                                    </div>
+                                </div>
+                                <button onclick="copyToClipboard('105974804727')" class="p-3 text-slate-400 hover:text-orange-600 hover:bg-orange-100 bg-white rounded-2xl shadow-sm border border-slate-200 active:scale-90 transition-all">
+                                    <i data-lucide="copy" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+
+                            <!-- Gopay Nusatama Operasional -->
+                            <div class="flex items-center justify-between p-4 rounded-3xl bg-slate-50 border border-slate-200 hover:border-blue-300 transition-colors hover:shadow-md group">
+                                <div class="flex items-center gap-4">
+                                    <div class="w-12 h-12 rounded-2xl bg-white flex items-center justify-center shadow-sm border border-slate-200 p-2 overflow-hidden transition-transform group-hover:scale-110">
+                                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/86/Gopay_logo.svg/1200px-Gopay_logo.svg.png" class="w-full h-full object-contain" alt="GoPay">
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-black text-slate-800">85880193610</p>
+                                        <p class="text-[10px] font-bold text-slate-500">Nugraha Satria Utama <span class="opacity-50">|</span> Gopay Operasional</p>
+                                    </div>
+                                </div>
+                                <button onclick="copyToClipboard('85880193610')" class="p-3 text-slate-400 hover:text-blue-600 hover:bg-blue-100 bg-white rounded-2xl shadow-sm border border-slate-200 active:scale-90 transition-all">
+                                    <i data-lucide="copy" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+                            
+                        </div>
+                    </div>
+
+                    <!-- DYNAMIC TABLE AREA FOR CLIENT PAYMENT SUMMARY -->
+                    <div class="bg-white rounded-[2.5rem] border-2 border-slate-100 shadow-sm overflow-hidden flex flex-col mt-4">
+                        <div class="p-6 pb-4 flex justify-between items-center border-b border-slate-100 bg-slate-50/50">
+                            <h4 class="font-black text-slate-800 flex items-center gap-2"><i data-lucide="users" class="w-5 h-5 text-indigo-500"></i> Client Leaderboard</h4>
+                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest bg-white px-2 py-1 rounded border border-slate-200">Aggregated</p>
+                        </div>
+                        <div class="table-scroll overflow-x-auto w-full pb-4 bg-white">
+                            <table class="w-full text-left border-collapse whitespace-nowrap">
+                                <thead>
+                                    <tr class="text-slate-400 font-bold uppercase text-[9px] tracking-widest border-b border-slate-100">
+                                        <th class="p-4">Player / Client</th><th class="p-4 text-right">Networth</th><th class="p-4 text-center">Quests Total</th><th class="p-4 text-right">Outstanding (A/R)</th><th class="p-4 text-center">On-going</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="clientPaymentTableBody" class="divide-y divide-slate-50 text-sm"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div id="unpaidListContainer" class="space-y-4 pt-4"></div>
+                </div>
+
+                <!-- TAB CONTENT: VENDOR PAYMENT -->
+                <div id="vendorTabContent" class="space-y-6 hidden animate-slide-up">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-indigo-600 p-6 rounded-[2rem] text-white shadow-lg shadow-indigo-300 relative overflow-hidden">
+                            <i data-lucide="shield-check" class="absolute -right-4 -bottom-4 w-20 h-20 opacity-20 text-white"></i>
+                            <p class="text-[9px] font-black uppercase opacity-90 flex items-center gap-1">Vendor Cleared</p>
+                            <h3 id="statVendorPaid" class="text-2xl font-black mt-2">--</h3>
+                        </div>
+                        <div class="bg-white p-6 rounded-[2rem] border-2 border-rose-100 text-rose-500 shadow-sm relative overflow-hidden">
+                            <i data-lucide="siren" class="absolute -right-4 -bottom-4 w-20 h-20 opacity-5 text-rose-600"></i>
+                            <p class="text-[9px] font-black uppercase text-rose-400 flex items-center gap-1">Expense Alert!</p>
+                            <h3 id="statVendorUnpaid" class="text-2xl font-black mt-2">--</h3>
+                        </div>
+                    </div>
+                    
+                    <button onclick="openPayVendorSheet()" class="w-full bg-indigo-50 text-indigo-700 border-2 border-indigo-200 p-8 rounded-[2.5rem] flex items-center justify-between btn-arcade">
+                        <div class="text-left">
+                            <p class="font-black text-xl text-indigo-700">Dispatch Vendor Pay 🚀</p>
+                            <p class="text-[10px] font-bold text-indigo-400 uppercase tracking-widest mt-1">Upload to 3rd Party Log</p>
+                        </div>
+                        <div class="bg-white p-3 rounded-2xl shadow-sm border border-indigo-100"><i data-lucide="send" class="w-6 h-6 text-indigo-600"></i></div>
+                    </button>
+
+                    <div id="vendorUnpaidListContainer" class="space-y-4 pt-4"></div>
+                </div>
+            </div>
+
+            <!-- JOB VIEW -->
+            <div id="jobPage" class="view-content hidden space-y-6">
+                <button onclick="openAddSheet()" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-8 rounded-[2.5rem] flex items-center justify-between shadow-xl shadow-blue-500/30 btn-arcade btn-arcade-blue">
+                    <div class="text-left">
+                        <p class="font-black text-xl text-white">Create New Quest ⚔️</p>
+                        <p class="text-[10px] opacity-80 font-bold uppercase tracking-widest mt-1 text-blue-100">Add to Main Journal</p>
+                    </div>
+                    <div class="bg-white/20 p-3 rounded-2xl backdrop-blur-sm"><i data-lucide="plus" class="w-8 h-8 text-white"></i></div>
+                </button>
+                
+                <div class="bg-white rounded-[2.5rem] border-2 border-slate-100 shadow-sm overflow-hidden flex flex-col">
+                    <div class="p-6 pb-4 flex justify-between items-center border-b border-slate-100 bg-slate-50/50">
+                        <h4 class="font-black text-slate-800 flex items-center gap-2">
+                            <i data-lucide="list-todo" class="w-5 h-5 text-indigo-600"></i> Project Tracker
+                        </h4>
+                        <p class="text-[10px] font-bold text-indigo-500 uppercase tracking-widest bg-indigo-50 px-2 py-1 rounded border border-indigo-100">Sortable</p>
+                    </div>
+                    <div class="table-scroll overflow-x-auto w-full pb-4">
+                        <table class="w-full text-left border-collapse whitespace-nowrap">
+                            <thead>
+                                <tr class="text-slate-400 font-black uppercase text-[9px] tracking-wider border-b border-slate-100">
+                                    <th class="p-4 cursor-pointer hover:bg-slate-50 transition-colors" onclick="sortJobTable('ProjectName')">Nama Project <i data-lucide="chevrons-up-down" class="inline w-3 h-3 ml-1 text-indigo-300"></i></th>
+                                    <th class="p-4 cursor-pointer hover:bg-slate-50 transition-colors" onclick="sortJobTable('Nama_Client')">Client <i data-lucide="chevrons-up-down" class="inline w-3 h-3 ml-1 text-indigo-300"></i></th>
+                                    <th class="p-4 cursor-pointer hover:bg-slate-50 transition-colors" onclick="sortJobTable('Deadline')">Deadline <i data-lucide="chevrons-up-down" class="inline w-3 h-3 ml-1 text-indigo-300"></i></th>
+                                    <th class="p-4 cursor-pointer hover:bg-slate-50 transition-colors text-center" onclick="sortJobTable('ProjectStatus')">Status <i data-lucide="chevrons-up-down" class="inline w-3 h-3 ml-1 text-indigo-300"></i></th>
+                                    <th class="p-4 cursor-pointer hover:bg-slate-50 transition-colors text-right" onclick="sortJobTable('SellPrice')">Nilai Project <i data-lucide="chevrons-up-down" class="inline w-3 h-3 ml-1 text-indigo-300"></i></th>
+                                    <th class="p-4 cursor-pointer hover:bg-slate-50 transition-colors text-center" onclick="sortJobTable('PaymentStatus')">Payment <i data-lucide="chevrons-up-down" class="inline w-3 h-3 ml-1 text-indigo-300"></i></th>
+                                </tr>
+                            </thead>
+                            <tbody id="jobTableBody" class="divide-y divide-slate-50 text-sm">
+                                <tr>
+                                    <td colspan="6" class="p-10 text-center">
+                                        <div class="flex flex-col items-center justify-center opacity-70">
+                                            <div class="w-8 h-8 border-4 border-slate-200 border-t-indigo-600 rounded-full animate-spin mb-3 shadow-lg"></div>
+                                            <span class="text-[10px] font-black uppercase tracking-widest text-indigo-500">Scanning Database...</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STATS VIEW -->
+            <div id="statsPage" class="view-content hidden space-y-8 animate-slide-up">
+                
+                <!-- CASHFLOW & RETENTION SUMMARY -->
+                <div class="space-y-4">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-gradient-to-br from-emerald-500 to-teal-600 p-5 rounded-[2rem] text-white shadow-lg overflow-hidden relative">
+                            <i data-lucide="piggy-bank" class="absolute -right-4 -bottom-4 w-20 h-20 opacity-10"></i>
+                            <p class="text-[9px] font-black uppercase tracking-widest opacity-80 flex items-center gap-1"><i data-lucide="trending-up" class="w-3 h-3"></i> Net Profit</p>
+                            <h3 id="statTotalProfit" class="text-xl font-black mt-1">Rp 0</h3>
+                        </div>
+                        <div class="bg-gradient-to-br from-rose-500 to-pink-600 p-5 rounded-[2rem] text-white shadow-lg overflow-hidden relative">
+                            <i data-lucide="receipt" class="absolute -right-4 -bottom-4 w-20 h-20 opacity-10"></i>
+                            <p class="text-[9px] font-black uppercase tracking-widest opacity-80 flex items-center gap-1"><i data-lucide="trending-down" class="w-3 h-3"></i> Total Expense</p>
+                            <h3 id="statTotalExpense" class="text-xl font-black mt-1">Rp 0</h3>
+                        </div>
+                    </div>
+                    <div class="bg-slate-800 p-5 rounded-[2rem] text-white shadow-lg flex justify-between items-center relative overflow-hidden">
+                        <div class="absolute inset-0 bg-gradient-to-r from-cyan-500/20 to-transparent"></div>
+                        <div class="z-10">
+                            <p class="text-[9px] font-black uppercase tracking-widest text-cyan-400">Recurring Clients (Retention)</p>
+                            <h3 id="statRecurring" class="text-2xl font-black mt-1">0%</h3>
+                        </div>
+                        <div class="bg-slate-700/80 p-3 rounded-2xl z-10 border border-slate-600"><i data-lucide="users" class="w-6 h-6 text-cyan-400"></i></div>
+                    </div>
+                </div>
+
+                <!-- QUEST FUNNEL -->
+                <div class="bg-white p-6 rounded-[2.5rem] border-2 border-slate-100 shadow-sm">
+                    <h4 class="font-black text-slate-800 mb-6 flex items-center gap-2"><i data-lucide="filter" class="w-5 h-5 text-indigo-500"></i> Quest Funnel Pipeline</h4>
+                    <div class="flex items-center justify-between relative px-2">
+                        <div class="absolute left-6 right-6 top-6 h-1 bg-slate-100 -z-10"></div>
+                        <div class="flex flex-col items-center bg-white">
+                            <div class="w-12 h-12 rounded-full bg-slate-50 border-4 border-white flex items-center justify-center shadow-md mb-2 z-10 text-slate-500 font-black" id="funnelPending">0</div>
+                            <p class="text-[9px] font-black uppercase tracking-widest text-slate-500">Pending</p>
+                        </div>
+                        <div class="flex flex-col items-center bg-white">
+                            <div class="w-12 h-12 rounded-full bg-indigo-50 border-4 border-white flex items-center justify-center shadow-md mb-2 z-10 text-indigo-600 font-black" id="funnelOngoing">0</div>
+                            <p class="text-[9px] font-black uppercase tracking-widest text-indigo-500">Ongoing</p>
+                        </div>
+                        <div class="flex flex-col items-center bg-white">
+                            <div class="w-12 h-12 rounded-full bg-emerald-50 border-4 border-white flex items-center justify-center shadow-md mb-2 z-10 text-emerald-600 font-black" id="funnelDone">0</div>
+                            <p class="text-[9px] font-black uppercase tracking-widest text-emerald-500">Done</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CASHFLOW STREAM -->
+                <div class="bg-white p-6 rounded-[2.5rem] border-2 border-slate-100 shadow-sm">
+                    <h4 class="font-black text-slate-800 mb-4 flex items-center gap-2"><i data-lucide="bar-chart-3" class="w-5 h-5 text-emerald-500"></i> Cashflow Stream</h4>
+                    <div class="chart-container"><canvas id="cashflowChart"></canvas></div>
+                </div>
+
+                <!-- PROJECT GROWTH / VELOCITY -->
+                <div class="bg-white p-6 rounded-[2.5rem] border-2 border-slate-100 shadow-sm">
+                    <h4 class="font-black text-slate-800 mb-4 flex items-center gap-2"><i data-lucide="rocket" class="w-5 h-5 text-blue-500"></i> Quest Growth Velocity</h4>
+                    <div class="chart-container"><canvas id="growthChart"></canvas></div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="bg-white p-6 rounded-[2.5rem] border-2 border-slate-100 shadow-sm">
+                        <h4 class="font-black text-slate-800 mb-4 flex items-center gap-2"><i data-lucide="pie-chart" class="w-5 h-5 text-fuchsia-500"></i> Quest Categories</h4>
+                        <div class="chart-container" style="height: 200px;"><canvas id="categoryChart"></canvas></div>
+                    </div>
+                    <div class="bg-white p-6 rounded-[2.5rem] border-2 border-slate-100 shadow-sm">
+                        <h4 class="font-black text-slate-800 mb-4 flex items-center gap-2"><i data-lucide="joystick" class="w-5 h-5 text-indigo-500"></i> Payment Channels</h4>
+                        <div class="chart-container" style="height: 200px;"><canvas id="paymentChannelChart"></canvas></div>
+                    </div>
+                </div>
+
+                <!-- RECURRING CLIENTS ACCORDION VIEW -->
+                <div class="bg-white p-6 rounded-[2.5rem] border-2 border-slate-100 shadow-sm">
+                    <h4 class="font-black text-slate-800 mb-4 flex items-center gap-2"><i data-lucide="repeat" class="w-5 h-5 text-indigo-500"></i> Loyal Players (Recurring)</h4>
+                    <div id="recurringClientsList" class="space-y-0">
+                        <div class="text-center p-4 text-slate-400 text-xs font-bold uppercase tracking-widest">Scanning Loyalty Stats...</div>
+                    </div>
+                </div>
+
+                <div class="bg-gradient-to-tr from-slate-900 to-indigo-900 p-8 rounded-[3rem] text-white shadow-2xl relative overflow-hidden">
+                    <div class="absolute -right-10 -top-10 w-40 h-40 bg-yellow-500/20 rounded-full blur-3xl"></div>
+                    <h4 class="font-black text-xl mb-6 flex items-center gap-2 relative z-10 text-yellow-400"><i data-lucide="crown" class="w-6 h-6"></i> MVP Players (Top Clients)</h4>
+                    <div id="topClientsList" class="space-y-4 relative z-10"></div>
+                </div>
+            </div>
+        </main>
+
+        <!-- FLOATING NAVIGATION DOCK -->
+        <div class="fixed bottom-0 w-full p-4 safe-bottom z-50 pointer-events-none">
+            <nav class="max-w-md mx-auto glass-dock rounded-[2rem] p-2 flex justify-between items-center pointer-events-auto shadow-2xl">
+                <button onclick="switchView('homePage', 'Command Center')" class="nav-btn flex-1 text-indigo-600 flex flex-col items-center gap-1.5 p-3 rounded-2xl hover:bg-white/50 transition-colors" data-view="homePage">
+                    <i data-lucide="gamepad-2" class="w-6 h-6"></i><span class="text-[8px] font-black uppercase tracking-widest text-center">Home</span>
+                </button>
+                <button onclick="switchView('jobPage', 'Quest Manager')" class="nav-btn flex-1 text-slate-400 flex flex-col items-center gap-1.5 p-3 rounded-2xl hover:bg-white/50 transition-colors" data-view="jobPage">
+                    <i data-lucide="sword" class="w-6 h-6"></i><span class="text-[8px] font-black uppercase tracking-widest text-center">Quests</span>
+                </button>
+                <button onclick="switchView('vendorBankPage', 'Ally & Vendor Bank')" class="nav-btn flex-1 text-slate-400 flex flex-col items-center gap-1.5 p-3 rounded-2xl hover:bg-white/50 transition-colors" data-view="vendorBankPage">
+                    <i data-lucide="library" class="w-6 h-6"></i><span class="text-[8px] font-black uppercase tracking-widest text-center">Vendors</span>
+                </button>
+                <button onclick="switchView('payPage', 'Earn Record')" class="nav-btn flex-1 text-slate-400 flex flex-col items-center gap-1.5 p-3 rounded-2xl hover:bg-white/50 transition-colors relative" data-view="payPage">
+                    <i data-lucide="gem" class="w-6 h-6"></i><span class="text-[8px] font-black uppercase tracking-widest text-center">Earn </span>
+                </button>
+                <button onclick="switchView('statsPage', 'Player Stats')" class="nav-btn flex-1 text-slate-400 flex flex-col items-center gap-1.5 p-3 rounded-2xl hover:bg-white/50 transition-colors" data-view="statsPage">
+                    <i data-lucide="bar-chart-4" class="w-6 h-6"></i><span class="text-[8px] font-black uppercase tracking-widest text-center">Stats</span>
+                </button>
+            </nav>
+        </div>
+    </div>
+
+    <!-- OVERLAYS (Sheets & Forms) -->
+    <div id="overlay" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden z-[60]" onclick="closeAllSheets()"></div>
+
+    <!-- ADD VENDOR SHEET (NEW) -->
+    <div id="addVendorSheet" class="fixed bottom-0 left-0 right-0 bg-white rounded-t-[3rem] z-[80] bottom-sheet safe-bottom shadow-[0_-10px_50px_rgba(0,0,0,0.2)] max-h-[92vh] overflow-y-auto">
+        <div class="p-10">
+            <div class="w-16 h-1.5 bg-slate-200 rounded-full mx-auto mb-10"></div>
+            <h3 class="text-3xl font-black mb-8 tracking-tight text-indigo-900 flex items-center gap-3"><i data-lucide="building-2" class="w-8 h-8 text-teal-500"></i> New Vendor</h3>
+            <div class="space-y-6">
+                <div class="space-y-1">
+                    <label class="text-[10px] font-black text-indigo-400 ml-4 uppercase tracking-widest">Vendor / Ally Name</label>
+                    <input type="text" id="v_name" placeholder="E.g. Printshop ABC" class="w-full bg-slate-50 p-5 rounded-[2rem] border-2 border-slate-100 focus:border-indigo-500 focus:bg-white outline-none font-bold text-slate-800 transition-all shadow-sm">
+                </div>
+                <div class="space-y-1">
+                    <label class="text-[10px] font-black text-emerald-500 ml-4 uppercase tracking-widest flex items-center gap-1.5">
+                        <i data-lucide="phone" class="w-3.5 h-3.5"></i> WhatsApp Number
+                    </label>
+                    <input type="tel" id="v_contact" inputmode="numeric" placeholder="e.g. 081234567..." class="w-full bg-emerald-50 p-5 rounded-[2rem] border-2 border-emerald-100 focus:border-emerald-500 focus:bg-white outline-none font-bold text-emerald-900 transition-all shadow-sm">
+                </div>
+                
+                <!-- Tagging Input (Multi-Tag Chips) -->
+                <div class="space-y-1">
+                    <label class="text-[10px] font-black text-indigo-400 ml-4 uppercase tracking-widest">Tags (Pisahkan dengan Spasi)</label>
+                    <div class="bg-slate-50 p-3 rounded-[2rem] border-2 border-slate-100 focus-within:border-indigo-500 transition-all shadow-sm flex flex-col min-h-[70px]">
+                        <div id="v_tags_container" class="flex flex-wrap gap-1.5 mb-1 px-2"></div>
+                        <input type="text" id="v_tag_input" placeholder="Ketik tag dan tekan spasi..." class="bg-transparent outline-none font-bold text-sm text-slate-800 w-full px-2 py-2 mt-1">
+                    </div>
+                </div>
+
+                <button onclick="submitNewVendor()" class="w-full bg-slate-900 text-white py-6 rounded-[2.5rem] font-black text-lg mt-8 btn-arcade btn-arcade-dark uppercase tracking-widest">Save Vendor</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- DETAILED PROJECT ACTION BOTTOM SHEET -->
+    <div id="jobDetailSheet" class="fixed bottom-0 left-0 right-0 bg-white rounded-t-[3rem] z-[80] bottom-sheet safe-bottom max-h-[92vh] overflow-y-auto shadow-[0_-10px_50px_rgba(0,0,0,0.2)] transition-all">
+        <div class="p-8">
+            <div class="w-16 h-1.5 bg-slate-200 rounded-full mx-auto mb-6"></div>
+            <div class="flex justify-between items-start mb-6">
+                <div class="flex-1 pr-4">
+                    <input type="text" id="detail_name" readonly class="w-full text-2xl font-black tracking-tight bg-transparent outline-none text-indigo-900 transition-colors p-1 -ml-1 rounded-lg">
+                    <p class="text-[10px] font-black text-indigo-400 uppercase tracking-widest mt-1 px-1">Quest Detail / Target</p>
+                </div>
+                <div class="flex gap-2">
+                    <button id="btnEditJob" onclick="toggleEditMode()" class="w-12 h-12 rounded-2xl bg-white border-2 border-slate-200 text-slate-50 flex items-center justify-center active:scale-90 transition-all shadow-sm hover:text-indigo-600 hover:border-indigo-300">
+                        <i data-lucide="pencil" class="w-5 h-5"></i>
+                    </button>
+                    <button id="btnDeleteJob" onclick="confirmDeleteJob()" class="w-12 h-12 rounded-2xl bg-red-50 text-red-500 flex items-center justify-center active:scale-90 transition-all shadow-sm hover:bg-red-100 border-2 border-red-100">
+                        <i data-lucide="bomb" class="w-5 h-5"></i>
+                    </button>
+                </div>
+            </div>
+
+            <input type="hidden" id="detail_ts">
+            <input type="hidden" id="detail_old_name">
+
+            <div class="space-y-4">
+                <div class="bg-indigo-50 p-4 rounded-[2rem] border-2 border-indigo-100 flex justify-between items-center">
+                    <p class="text-[10px] font-black text-indigo-500 uppercase tracking-widest"><i data-lucide="activity" class="inline w-4 h-4 mb-0.5"></i> Quest Status</p>
+                    <select id="detail_status" disabled class="bg-white font-black text-center text-indigo-700 outline-none text-xs uppercase px-4 py-2 rounded-xl cursor-default appearance-none shadow-sm border border-indigo-200">
+                        <option value="PENDING">PENDING</option>
+                        <option value="ONGOING">ONGOING</option>
+                        <option value="DONE">DONE</option>
+                        <option value="CANCELLED">CANCELLED</option>
+                    </select>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="bg-slate-50 p-5 rounded-[2rem] border-2 border-slate-100">
+                        <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1.5"><i data-lucide="user" class="inline w-3 h-3 mb-0.5"></i> Player</p>
+                        <select id="detail_client" disabled class="w-full bg-transparent font-black text-sm text-slate-700 outline-none appearance-none truncate cursor-default"></select>
+                    </div>
+                    <div class="bg-slate-50 p-5 rounded-[2rem] border-2 border-slate-100">
+                        <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1.5"><i data-lucide="building-2" class="inline w-3 h-3 mb-0.5"></i> Vendor / Ally</p>
+                        <select id="detail_vendor" disabled class="w-full bg-transparent font-black text-sm text-slate-700 outline-none appearance-none truncate cursor-default"></select>
+                    </div>
+                    <div class="bg-red-50/50 p-5 rounded-[2rem] border-2 border-red-100">
+                        <p class="text-[9px] font-black text-red-400 uppercase tracking-widest mb-1.5"><i data-lucide="hourglass" class="inline w-3 h-3 mb-0.5"></i> Time Limit</p>
+                        <input type="date" id="detail_deadline" readonly class="w-full bg-transparent font-black text-sm text-red-600 outline-none cursor-default">
+                    </div>
+                    <div class="bg-emerald-50/50 p-5 rounded-[2rem] border-2 border-emerald-100">
+                        <p class="text-[9px] font-black text-emerald-500 uppercase tracking-widest mb-1.5"><i data-lucide="coins" class="inline w-3 h-3 mb-0.5"></i> Bounty</p>
+                        <input type="text" id="detail_price" readonly oninput="formatCurrencyInput(this)" class="w-full bg-transparent font-black text-sm outline-none text-emerald-600 cursor-default">
+                    </div>
+                </div>
+
+                <div class="bg-cyan-50 p-6 rounded-[2.5rem] border-2 border-cyan-100">
+                    <div class="flex justify-between items-center mb-3">
+                        <p class="text-[10px] font-black text-cyan-600 uppercase tracking-widest"><i data-lucide="file-archive" class="inline w-4 h-4 mb-0.5"></i> Quest Soft-File / File</p>
+                    </div>
+                    <div id="detail_softcopy_view" class="flex gap-2 items-center transition-all">
+                        <a id="detail_softcopy_link" href="#" target="_blank" class="flex-1 bg-white border-2 border-cyan-200 text-cyan-600 text-center font-black text-sm p-4 rounded-2xl shadow-sm hover:bg-cyan-600 hover:text-white transition-all truncate">Open Soft-File 📂</a>
+                        <span id="detail_no_file" class="hidden text-xs font-bold text-slate-400 py-3">No Soft-File Provided.</span>
+                    </div>
+                    
+                    <!-- UI Edit Mode dengan Swal Upload dan Destroy Button -->
+                    <div id="detail_softcopy_edit" class="hidden mt-4 space-y-3">
+                        
+                        <!-- Opsi Hapus File Lama -->
+                        <div id="detail_remove_wrapper" class="flex items-center justify-between bg-red-50 p-3 rounded-xl border border-red-200 hidden">
+                            <div class="flex items-center gap-2">
+                                <i data-lucide="trash-2" class="w-4 h-4 text-red-500"></i>
+                                <span class="text-[10px] font-black text-red-600 uppercase tracking-wider">Existing Intel</span>
+                            </div>
+                            <button type="button" onclick="toggleRemoveOldFile()" id="btn_remove_old_file" class="text-[9px] bg-red-500 text-white px-3 py-1.5 rounded-lg font-black uppercase tracking-widest hover:bg-red-600 transition-colors shadow-sm active:scale-95">DESTROY</button>
+                            <input type="checkbox" id="detail_remove_file" class="hidden">
+                        </div>
+
+                        <!-- Tombol Upload Mode Swal -->
+                        <button type="button" onclick="promptReuploadSoftfile()" class="w-full bg-cyan-600 text-white py-4 rounded-[1.5rem] font-black text-xs uppercase tracking-widest hover:bg-cyan-700 transition-all flex items-center justify-center gap-2 shadow-md btn-arcade">
+                            <i data-lucide="upload-cloud" class="w-5 h-5"></i> Upload / Replace Intel (Swal)
+                        </button>
+                        
+                        <div class="relative group">
+                            <!-- Input aslinya kita sembunyikan karena pakai Swal -->
+                            <input type="file" id="detail_new_file" class="hidden">
+                            
+                            <!-- Area Peek yang muncul saat file baru dipilih via Swal -->
+                            <div id="detail_peek_area" class="hidden mt-2 flex items-center justify-between bg-white p-3 rounded-2xl shadow-sm border border-cyan-200 relative z-10">
+                                <div class="flex items-center gap-2 overflow-hidden">
+                                    <button type="button" onclick="clearPeekFile('detail_new_file', 'detail_peek_area', 'detail_file_name')" class="p-1.5 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors shrink-0">
+                                        <i data-lucide="x" class="w-4 h-4"></i>
+                                    </button>
+                                    <span id="detail_file_name" class="text-xs font-bold text-slate-600 truncate max-w-[150px] px-1"></span>
+                                </div>
+                                <button type="button" onclick="peekFile('detail_new_file')" class="text-[10px] bg-cyan-100 text-cyan-700 px-4 py-2.5 rounded-xl font-black uppercase tracking-widest hover:bg-cyan-200 transition-colors flex items-center gap-1.5 active:scale-95 shrink-0"><i data-lucide="eye" class="w-4 h-4"></i> Peek</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <button id="btnSaveEdits" onclick="confirmSaveEdits()" class="hidden w-full bg-emerald-500 text-white py-6 rounded-[2.5rem] font-black text-lg mt-6 btn-arcade btn-arcade-green uppercase tracking-wider">
+                    Save Checkpoint 💾
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ADD PROJECT SHEET -->
+    <div id="addSheet" class="fixed bottom-0 left-0 right-0 bg-white rounded-t-[3rem] z-[70] bottom-sheet safe-bottom max-h-[92vh] overflow-y-auto shadow-[0_-10px_50px_rgba(0,0,0,0.2)]">
+        <div class="p-10">
+            <div class="w-16 h-1.5 bg-slate-200 rounded-full mx-auto mb-8"></div>
+            <h3 class="text-3xl font-black mb-8 tracking-tight text-indigo-900">New Quest Entry ⚔️</h3>
+            <div class="space-y-6">
+                <div class="space-y-1">
+                    <label class="text-[10px] font-black text-indigo-400 ml-4 uppercase tracking-widest">Quest Title</label>
+                    <input type="text" id="f_name" placeholder="E.g. Branding Re-design" class="w-full bg-slate-50 p-5 rounded-[2rem] border-2 border-slate-100 focus:border-indigo-500 focus:bg-white outline-none font-bold text-slate-800 transition-all shadow-sm">
+                </div>
+                <div class="space-y-1">
+                    <div class="flex justify-between items-center px-4">
+                        <label class="text-[10px] font-black text-indigo-400 uppercase tracking-widest">Player / Client</label>
+                        <button onclick="openAddClientSheet()" class="text-[9px] font-black text-white bg-indigo-500 px-3 py-1.5 rounded-full hover:bg-indigo-600 active:scale-95 transition-all shadow-md flex items-center gap-1 uppercase tracking-wider"><i data-lucide="user-plus" class="w-3 h-3"></i> Add</button>
+                    </div>
+                    <select id="f_client_select" onchange="autoFillClientInfo()" class="w-full bg-slate-50 p-5 rounded-[2rem] border-2 border-slate-100 focus:border-indigo-500 focus:bg-white outline-none font-bold text-slate-800 appearance-none shadow-sm transition-all"><option value="">Choose Player...</option></select>
+                </div>
+                
+                <!-- Input File Upload Diubah menjadi Mode "Peek on Click" -->
+                <div class="space-y-1">
+                    <label class="text-[10px] font-black text-indigo-400 ml-4 uppercase tracking-widest">Upload Soft-File <span class="text-indigo-300">(Max 15MB)</span></label>
+                    <div class="bg-indigo-50 p-5 rounded-[2rem] border-2 border-indigo-100 relative group hover:border-indigo-300 transition-colors">
+                        <input type="file" id="f_softcopy" onchange="handlePeekFileSelect(this, 'f_peek_area', 'f_file_name')" class="w-full text-xs text-slate-500 file:mr-4 file:py-3 file:px-5 file:rounded-xl file:border-0 file:text-[10px] file:uppercase file:tracking-widest file:font-black file:bg-indigo-600 file:text-white hover:file:bg-indigo-700 relative z-10 cursor-pointer shadow-md mb-1">
+                        
+                        <!-- Area Peek yang akan muncul ketika file dipilih -->
+                        <div id="f_peek_area" class="hidden mt-4 flex items-center justify-between bg-white p-3 rounded-2xl shadow-sm border border-indigo-100 relative z-10">
+                            <div class="flex items-center gap-2 overflow-hidden">
+                                <button type="button" onclick="clearPeekFile('f_softcopy', 'f_peek_area', 'f_file_name')" class="p-1.5 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors shrink-0">
+                                    <i data-lucide="x" class="w-4 h-4"></i>
+                                </button>
+                                <span id="f_file_name" class="text-xs font-bold text-slate-600 truncate max-w-[150px] px-1">filename.pdf</span>
+                            </div>
+                            <button type="button" onclick="peekFile('f_softcopy')" class="text-[10px] bg-cyan-100 text-cyan-700 px-4 py-2.5 rounded-xl font-black uppercase tracking-widest hover:bg-cyan-200 transition-colors flex items-center gap-1.5 active:scale-95 shrink-0"><i data-lucide="eye" class="w-4 h-4"></i> Peek</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="space-y-1"><label class="text-[10px] font-black text-slate-400 ml-4 uppercase tracking-widest">Comm Link</label><input type="text" id="f_wa" readonly class="w-full bg-slate-100 p-5 rounded-[2rem] border-2 border-transparent outline-none text-slate-500 text-sm font-bold opacity-80 cursor-not-allowed"></div>
+                    <div class="space-y-1"><label class="text-[10px] font-black text-slate-400 ml-4 uppercase tracking-widest">Faction</label><input type="text" id="f_entity" readonly class="w-full bg-slate-100 p-5 rounded-[2rem] border-2 border-transparent outline-none text-slate-500 text-sm font-bold opacity-80 cursor-not-allowed"></div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="space-y-1 relative"><label class="text-[10px] font-black text-red-500 ml-4 uppercase tracking-widest">Limit (Date)</label><input type="date" id="f_date" class="w-full bg-red-50 p-5 rounded-[2rem] border-2 border-red-100 focus:border-red-400 focus:bg-white outline-none text-sm font-bold transition-all text-red-900 shadow-sm"></div>
+                    <div class="space-y-1 relative"><label class="text-[10px] font-black text-red-500 ml-4 uppercase tracking-widest">Limit (Hour)</label><input type="time" id="f_time" class="w-full bg-red-50 p-5 rounded-[2rem] border-2 border-red-100 focus:border-red-400 focus:bg-white outline-none text-sm font-bold transition-all text-red-900 shadow-sm"></div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="space-y-1"><label class="text-[10px] font-black text-indigo-400 ml-4 uppercase tracking-widest">Quest Type</label><select id="f_type" class="w-full bg-slate-50 p-5 rounded-[2rem] border-2 border-slate-100 focus:border-indigo-500 focus:bg-white outline-none text-sm font-bold appearance-none shadow-sm transition-all"></select></div>
+                    <div class="space-y-1"><label class="text-[10px] font-black text-indigo-400 ml-4 uppercase tracking-widest">Earn  Channel</label><select id="f_pay_channel" class="w-full bg-slate-50 p-5 rounded-[2rem] border-2 border-slate-100 focus:border-indigo-500 focus:bg-white outline-none text-sm font-bold appearance-none shadow-sm transition-all"></select></div>
+                </div>
+                <div class="space-y-1">
+                    <label class="text-[10px] font-black text-indigo-400 ml-4 uppercase tracking-widest">Ally / Vendor</label>
+                    <select id="f_vendor" class="w-full bg-slate-50 p-5 rounded-[2rem] border-2 border-slate-100 focus:border-indigo-500 focus:bg-white outline-none text-sm font-bold appearance-none shadow-sm transition-all"><option value="">Pilih Vendor / In-House...</option></select>
+                </div>
+                <div class="space-y-1"><label class="text-[10px] font-black text-indigo-400 ml-4 uppercase tracking-widest">Quest Briefing</label><textarea id="f_desc" rows="2" placeholder="Detail pekerjaan..." class="w-full bg-slate-50 p-5 rounded-[2rem] border-2 border-slate-100 focus:border-indigo-500 focus:bg-white outline-none text-sm font-medium shadow-sm transition-all"></textarea></div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="space-y-1"><label class="text-[10px] font-black text-rose-500 ml-4 uppercase tracking-widest">Cost (Expense)</label><input type="text" id="f_expense" oninput="formatCurrencyInput(this); calculateProfit()" placeholder="Rp. 0" class="w-full bg-rose-50 p-5 rounded-[2rem] border-2 border-rose-100 focus:border-rose-400 focus:bg-white outline-none font-black text-rose-600 text-lg shadow-sm transition-all"></div>
+                    <div class="space-y-1"><label class="text-[10px] font-black text-emerald-500 ml-4 uppercase tracking-widest">Bounty (Price)</label><input type="text" id="f_sell" oninput="formatCurrencyInput(this); calculateProfit()" placeholder="Rp. 0" class="w-full bg-emerald-50 p-5 rounded-[2rem] border-2 border-emerald-100 focus:border-emerald-400 focus:bg-white outline-none font-black text-emerald-600 text-lg shadow-sm transition-all"></div>
+                </div>
+                <div class="bg-slate-900 rounded-[2rem] p-6 text-white flex justify-between items-center shadow-lg border-2 border-slate-800 animate-slide-up">
+                    <div><p class="text-[9px] font-black uppercase opacity-60 tracking-widest text-cyan-300">Net XP / Profit</p><h4 id="calc_profit_val" class="text-2xl font-black mt-1">Rp. 0</h4></div>
+                    <div class="text-right"><p class="text-[9px] font-black uppercase opacity-60 tracking-widest text-cyan-300">Multiplier</p><h4 id="calc_profit_rate" class="text-2xl font-black text-emerald-400 mt-1">0%</h4></div>
+                </div>
+                <button id="btnSubmitProject" onclick="saveNewProject()" class="w-full bg-indigo-600 text-white py-6 rounded-[2.5rem] font-black text-lg mt-6 btn-arcade btn-arcade-blue uppercase tracking-widest flex justify-center items-center gap-2">Start Quest 🚀</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ADD CLIENT SHEET -->
+    <div id="addClientSheet" class="fixed bottom-0 left-0 right-0 bg-white rounded-t-[3rem] z-[80] bottom-sheet safe-bottom shadow-[0_-10px_50px_rgba(0,0,0,0.2)]">
+        <div class="p-10">
+            <div class="w-16 h-1.5 bg-slate-200 rounded-full mx-auto mb-10"></div>
+            <h3 class="text-3xl font-black mb-8 tracking-tight text-indigo-900">Add New Client👋🏻</h3>
+            <div class="space-y-5">
+                <div class="space-y-1">
+                    <label class="text-[10px] font-black text-indigo-400 ml-4 uppercase tracking-widest">Player Name</label>
+                    <input type="text" id="c_name" placeholder="Full Name..." class="w-full bg-slate-50 p-5 rounded-[2rem] border-2 border-slate-100 focus:border-indigo-500 focus:bg-white outline-none font-bold text-slate-800 transition-all shadow-sm">
+                </div>
+                <div class="space-y-1">
+                    <label class="text-[10px] font-black text-indigo-400 ml-4 uppercase tracking-widest">Entity / Faction</label>
+                    <input type="text" id="c_entity" placeholder="Company or Team..." class="w-full bg-slate-50 p-5 rounded-[2rem] border-2 border-slate-100 focus:border-indigo-500 focus:bg-white outline-none font-bold text-slate-800 transition-all shadow-sm">
+                </div>
+                <div class="space-y-1">
+                    <label class="text-[10px] font-black text-emerald-500 ml-4 uppercase tracking-widest flex items-center gap-1.5">
+                        <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
+                        WhatsApp Number
+                    </label>
+                    <input type="tel" id="c_wa" inputmode="numeric" placeholder="e.g. 6281234..." class="w-full bg-emerald-50 p-5 rounded-[2rem] border-2 border-emerald-100 focus:border-emerald-500 focus:bg-white outline-none font-bold text-emerald-900 transition-all shadow-sm">
+                </div>
+                <div class="space-y-1">
+                    <label class="text-[10px] font-black text-indigo-400 ml-4 uppercase tracking-widest flex items-center gap-1.5"><i data-lucide="map-pin" class="w-3.5 h-3.5"></i> Location</label>
+                    <input type="text" id="c_loc" placeholder="City or Region..." class="w-full bg-slate-50 p-5 rounded-[2rem] border-2 border-slate-100 focus:border-indigo-500 focus:bg-white outline-none font-bold text-slate-800 transition-all shadow-sm">
+                </div>
+                <button onclick="submitNewClient()" class="w-full bg-slate-900 text-white py-6 rounded-[2.5rem] font-black text-lg mt-8 btn-arcade btn-arcade-dark uppercase tracking-widest">Register Customer</button>
+                <button onclick="closeAddClientSheet()" class="w-full text-slate-400 font-bold py-4 text-sm hover:text-slate-600">Cancel Operation</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PAY SHEET (CLIENT PAYMENT) -->
+    <div id="paySheet" class="fixed bottom-0 left-0 right-0 bg-white rounded-t-[3rem] z-[70] bottom-sheet safe-bottom shadow-[0_-10px_50px_rgba(0,0,0,0.2)]">
+        <div class="p-10">
+            <div class="w-16 h-1.5 bg-slate-200 rounded-full mx-auto mb-10"></div>
+            <h3 class="text-3xl font-black mb-8 tracking-tight text-indigo-900 flex items-center gap-3"><i data-lucide="gem" class="w-8 h-8 text-emerald-500"></i> Claim Earn</h3>
+            <div class="space-y-6">
+                <div class="space-y-1">
+                    <label class="text-[10px] font-black text-indigo-400 ml-4 uppercase tracking-widest">Target Quest (Unpaid)</label>
+                    <select id="paySelect" class="w-full bg-slate-50 p-5 rounded-[2rem] border-2 border-slate-100 focus:border-indigo-500 focus:bg-white outline-none font-bold text-slate-800 appearance-none shadow-sm transition-all"><option value="">Select Quest to Claim...</option></select>
+                </div>
+                <div class="space-y-1">
+                    <label class="text-[10px] font-black text-indigo-400 ml-4 uppercase tracking-widest">Destination Vault</label>
+                    <select id="payBankSelect" class="w-full bg-slate-50 p-5 rounded-[2rem] border-2 border-slate-100 focus:border-indigo-500 focus:bg-white outline-none font-bold text-slate-800 appearance-none shadow-sm transition-all"><option value="">Select Vault...</option></select>
+                </div>
+                <div class="bg-indigo-50 p-6 rounded-[2rem] border-2 border-indigo-100 text-center relative overflow-hidden group">
+                    <p class="text-[10px] font-black text-indigo-600 uppercase tracking-widest mb-3"><i data-lucide="camera" class="inline w-4 h-4 mb-1"></i> Upload Receipt</p>
+                    <input type="file" id="payFile" onchange="handleFilePreview(this, 'pay_preview_img', 'pay_preview_cont')" class="w-full text-xs text-slate-500 file:mr-4 file:py-3 file:px-5 file:rounded-xl file:border-0 file:text-[10px] file:uppercase file:tracking-widest file:font-black file:bg-indigo-600 file:text-white cursor-pointer relative z-10">
+                    <div id="pay_preview_cont" class="hidden mt-4 rounded-2xl overflow-hidden border-2 border-indigo-200 bg-white flex items-center justify-center max-h-32 shadow-inner"><img id="pay_preview_img" src="" class="object-contain w-full h-full max-h-32 p-2"></div>
+                </div>
+                <button onclick="submitPayment()" class="w-full bg-emerald-500 text-white py-6 rounded-[2.5rem] font-black text-lg mt-8 btn-arcade btn-arcade-green uppercase tracking-widest">Secure Earn 💸</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- VENDOR PAY SHEET (EXPENSE PAYMENT) -->
+    <div id="payVendorSheet" class="fixed bottom-0 left-0 right-0 bg-white rounded-t-[3rem] z-[70] bottom-sheet safe-bottom max-h-[92vh] overflow-y-auto shadow-[0_-10px_50px_rgba(0,0,0,0.2)]">
+        <div class="p-10">
+            <div class="w-16 h-1.5 bg-slate-200 rounded-full mx-auto mb-10"></div>
+            <h3 class="text-3xl font-black mb-8 tracking-tight text-indigo-900 flex items-center gap-3"><i data-lucide="send" class="w-8 h-8 text-indigo-500"></i> Dispatch Pay</h3>
+            <div class="space-y-6">
+                <div class="space-y-1">
+                    <label class="text-[10px] font-black text-indigo-400 ml-4 uppercase tracking-widest">Select Quest (Expense)</label>
+                    <select id="vendorPaySelect" onchange="autoFillVendorPayAmount()" class="w-full bg-slate-50 p-5 rounded-[2rem] border-2 border-slate-100 focus:border-indigo-500 focus:bg-white outline-none font-bold text-slate-800 appearance-none shadow-sm transition-all"><option value="">Pilih Tagihan Vendor/Expense...</option></select>
+                </div>
+                <div class="space-y-1">
+                    <label class="text-[10px] font-black text-indigo-400 ml-4 uppercase tracking-widest">Ally / Vendor Name</label>
+                    <input type="text" id="vendorPayVendorName" class="w-full bg-slate-50 p-5 rounded-[2rem] border-2 border-slate-100 focus:border-indigo-500 focus:bg-white outline-none font-bold text-slate-800 shadow-sm transition-all">
+                </div>
+                <div class="space-y-1">
+                    <label class="text-[10px] font-black text-indigo-400 ml-4 uppercase tracking-widest">Source Vault</label>
+                    <select id="vendorPayBankSelect" class="w-full bg-slate-50 p-5 rounded-[2rem] border-2 border-slate-100 focus:border-indigo-500 focus:bg-white outline-none font-bold text-slate-800 appearance-none shadow-sm transition-all"><option value="">Pilih Rekening Sumber...</option></select>
+                </div>
+                <div class="space-y-1">
+                    <label class="text-[10px] font-black text-indigo-400 ml-4 uppercase tracking-widest">Amount to Dispatch</label>
+                    <input type="text" id="vendorPayAmount" oninput="formatCurrencyInput(this)" class="w-full bg-indigo-50 p-5 rounded-[2rem] border-2 border-indigo-100 focus:border-indigo-400 focus:bg-white outline-none font-black text-indigo-600 text-lg shadow-sm transition-all">
+                </div>
+                <div class="bg-indigo-50 p-6 rounded-[2rem] border-2 border-indigo-100 text-center relative overflow-hidden group">
+                    <p class="text-[10px] font-black text-indigo-600 uppercase tracking-widest mb-3"><i data-lucide="camera" class="inline w-4 h-4 mb-1"></i> Upload Receipt</p>
+                    <input type="file" id="vendorPayFile" onchange="handleFilePreview(this, 'vendor_preview_img', 'vendor_preview_cont')" class="w-full text-xs text-slate-500 file:mr-4 file:py-3 file:px-5 file:rounded-xl file:border-0 file:text-[10px] file:uppercase file:tracking-widest file:font-black file:bg-indigo-600 file:text-white cursor-pointer relative z-10">
+                    <div id="vendor_preview_cont" class="hidden mt-4 rounded-2xl overflow-hidden border-2 border-indigo-200 bg-white flex items-center justify-center max-h-32 shadow-inner"><img id="vendor_preview_img" src="" class="object-contain w-full h-full max-h-32 p-2"></div>
+                </div>
+                <button onclick="submitVendorPayment()" class="w-full bg-indigo-600 text-white py-6 rounded-[2.5rem] font-black text-lg mt-8 btn-arcade btn-arcade-blue uppercase tracking-widest">Send to 3rd Party Log 📡</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+        
+        const quranQuotes = [
+            "وَمَنْ يَّتَّقِ اللّٰهَ يَجْعَلْ لَّهٗ مَخْرَجًاۙ ۝٢",
+            "وَّيَرْزُقْهُ مِنْ حَيْثُ لَا يَحْتَسِبُۗ",
+            "وَمَنْ يَّتَوَكَّلْ عَلَى اللّٰهِ فَهُوَ حَسْبُهٗۗ",
+            "اِنَّ اللّٰهَ بَالِغُ اَمْرِهٖۗ قَدْ جَعَلَ اللّٰهُ لِكُلِّ شَيْءٍ قَدْرًا ۝٣"
+        ];
+        let quoteIndex = 0;
+
+        function startQuoteAnimation() {
+            const quoteEl = document.getElementById('arabicQuote');
+            if(!quoteEl) return;
+            function cycleQuote() {
+                if(document.getElementById('loginPage').classList.contains('hidden')) return;
+                quoteEl.style.transition = 'none';
+                quoteEl.classList.remove('show');
+                quoteEl.innerText = quranQuotes[quoteIndex];
+                setTimeout(() => {
+                    quoteEl.style.transition = 'opacity 3s ease-in-out, transform 15s linear';
+                    quoteEl.classList.add('show');
+                    setTimeout(() => {
+                        quoteEl.classList.remove('show');
+                        setTimeout(() => { quoteIndex = (quoteIndex + 1) % quranQuotes.length; cycleQuote(); }, 3000);
+                    }, 10000);
+                }, 50);
+            }
+            cycleQuote();
+        }
+        
+        document.addEventListener("DOMContentLoaded", () => {
+            startQuoteAnimation();
+            
+            // Allow pressing Enter to login
+            const pinEl = document.getElementById('pinInput');
+            if(pinEl) {
+                pinEl.addEventListener('keypress', function (e) {
+                    if (e.key === 'Enter') doLogin();
+                });
+            }
+        });
+
+        // --- AUTH & LOGIN SYSTEM ---
+        async function doLogin() {
+            const pin = document.getElementById('pinInput').value;
+            if (!pin) {
+                showGameError('Missing PIN', 'Harap masukkan PIN akses.');
+                return;
+            }
+
+            showGameLoading('Authenticating... 🛡️');
+
+            try {
+                const res = await fetch(API_ENDPOINT, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: "validatePin", pin: pin })
+                });
+                
+                const data = await res.json();
+
+                if (data.status === "success") {
+                    Swal.close();
+                    document.getElementById('loginPage').classList.add('hidden');
+                    document.getElementById('mainApp').classList.remove('hidden');
+                    document.body.classList.replace('bg-slate-900', 'bg-slate-50');
+                    loadData(); // Load dashboard data
+                } else {
+                    throw new Error(data.message || 'Invalid PIN');
+                }
+            } catch (e) {
+                showGameError('Access Denied 🛑', e.message);
+            }
+        }
+
+        // --- KONFIGURASI API ---
+        const API_ENDPOINT = "https://thesidekick.nusatama4dev.workers.dev/api";
+        
+        let allProjs = []; let clientBook = []; let paymentChannelList = []; 
+        let vendorListGlobal = []; 
+        let vendorBankGlobal = []; // Array object detail untuk Menu Vendor Bank
+        let activeVendorTags = []; // Menyimpan tag yang sedang aktif difilter
+        
+        let cashflowChart, growthChart, categoryChart, paymentChannelChart;
+        let currentJobSort = { key: 'Timestamp', dir: 'desc' }; let isEditMode = false; 
+
+        const GameToast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 2500, timerProgressBar: true, background: '#1e293b', color: '#fff' });
+
+        function showGameLoading(msg) { Swal.fire({ title: msg, html: '<div class="w-12 h-12 border-4 border-indigo-500 border-t-cyan-400 rounded-full animate-spin mx-auto my-4"></div>', showConfirmButton: false, allowOutsideClick: false, background: '#0f172a', color: '#fff', customClass: { popup: 'swal-game-popup', title: 'swal-game-title text-cyan-400' }});}
+        function showGameSuccess(title, msg) { Swal.fire({ title: title, text: msg, icon: 'success', background: '#0f172a', color: '#fff', confirmButtonColor: '#10b981', confirmButtonText: 'AWESOME! 🎮', customClass: { popup: 'swal-game-popup', title: 'swal-game-title text-emerald-400', confirmButton: 'btn-arcade btn-arcade-green font-black rounded-2xl py-3 px-8' }});}
+        function showGameError(title, msg) { Swal.fire({ title: title, text: msg, icon: 'error', background: '#0f172a', color: '#fff', confirmButtonColor: '#ef4444', confirmButtonText: 'TRY AGAIN 🔄', customClass: { popup: 'swal-game-popup', title: 'swal-game-title text-rose-500', confirmButton: 'btn-arcade font-black rounded-2xl py-3 px-8' }});}
+
+        // ==========================================
+        // FILE UPLOAD OPTIMIZER (PDF & IMAGE SAFE)
+        // ==========================================
+        async function processFileForUpload(file) {
+            // Compress image secara otomatis (kecuali GIF/SVG)
+            if (file.type.startsWith('image/') && !file.type.includes('gif') && !file.type.includes('svg')) {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        const img = new Image();
+                        img.onload = () => {
+                            const canvas = document.createElement('canvas');
+                            let width = img.width;
+                            let height = img.height;
+                            const maxWidth = 1600; 
+                            
+                            if (width > maxWidth) { 
+                                height = Math.round((height * maxWidth) / width); 
+                                width = maxWidth; 
+                            }
+                            
+                            canvas.width = width; canvas.height = height;
+                            const ctx = canvas.getContext('2d');
+                            ctx.drawImage(img, 0, 0, width, height);
+                            
+                            let mimeType = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
+                            const dataUrl = canvas.toDataURL(mimeType, 0.75);
+                            resolve({ data: dataUrl, name: file.name, type: mimeType });
+                        };
+                        img.onerror = () => reject(new Error("Gagal membaca file gambar."));
+                        img.src = e.target.result;
+                    };
+                    reader.onerror = () => reject(new Error("Gagal membaca file."));
+                    reader.readAsDataURL(file);
+                });
+            }
+            
+            // Untuk PDF dan format lain (Anti-Error)
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve({ data: reader.result, name: file.name, type: file.type });
+                reader.onerror = () => reject(new Error("Gagal mengonversi PDF ke format transmisi."));
+                reader.readAsDataURL(file);
+            });
+        }
+        // ==========================================
+
+        function switchPayTab(tab) {
+            const clientContent = document.getElementById('clientTabContent'); const vendorContent = document.getElementById('vendorTabContent');
+            const clientBtn = document.getElementById('tabBtnClient'); const vendorBtn = document.getElementById('tabBtnVendor');
+            if (tab === 'client') { clientContent.classList.remove('hidden'); vendorContent.classList.add('hidden'); clientBtn.classList.add('bg-white', 'shadow-md', 'text-indigo-600', 'scale-100'); clientBtn.classList.remove('text-slate-400', 'scale-95'); vendorBtn.classList.remove('bg-white', 'shadow-md', 'text-indigo-600', 'scale-100'); vendorBtn.classList.add('text-slate-400', 'scale-95'); } 
+            else { vendorContent.classList.remove('hidden'); clientContent.classList.add('hidden'); vendorBtn.classList.add('bg-white', 'shadow-md', 'text-indigo-600', 'scale-100'); vendorBtn.classList.remove('text-slate-400', 'scale-95'); clientBtn.classList.remove('bg-white', 'shadow-md', 'text-indigo-600', 'scale-100'); clientBtn.classList.add('text-slate-400', 'scale-95'); }
+        }
+
+        function toggleBankList() { const list = document.getElementById('bankList'); const icon = document.getElementById('bankListIcon'); if (list.classList.contains('hidden')) { list.classList.remove('hidden'); icon.classList.add('rotate-180'); } else { list.classList.add('hidden'); icon.classList.remove('rotate-180'); } }
+
+        function handleFilePreview(inputElement, previewImgId, previewContainerId) {
+            const file = inputElement.files[0]; const previewCont = document.getElementById(previewContainerId); const previewImg = document.getElementById(previewImgId);
+            if (file) { previewCont.classList.remove('hidden'); if (file.type.startsWith('image/')) { const reader = new FileReader(); reader.onload = (e) => { previewImg.src = e.target.result; previewImg.classList.remove('hidden'); }; reader.readAsDataURL(file); } else { previewImg.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 24 24' fill='none' stroke='%234f46e5' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z'/%3E%3Cpolyline points='14 2 14 8 20 8'/%3E%3Cline x1='16' y1='13' x2='8' y2='13'/%3E%3Cline x1='16' y1='17' x2='8' y2='17'/%3E%3Cpolyline points='10 9 9 9 8 9'/%3E%3C/svg%3E"; previewImg.classList.remove('hidden'); } } 
+            else { previewCont.classList.add('hidden'); previewImg.src = ""; }
+        }
+
+        function handlePeekFileSelect(inputElement, peekAreaId, fileNameId) {
+            const file = inputElement.files[0]; const peekArea = document.getElementById(peekAreaId); const fileNameDisp = document.getElementById(fileNameId);
+            if (file) { fileNameDisp.innerText = file.name; peekArea.classList.remove('hidden'); } else { peekArea.classList.add('hidden'); fileNameDisp.innerText = ""; }
+            setTimeout(() => lucide.createIcons(), 50);
+        }
+
+        function peekFile(inputId) {
+            const inputElement = document.getElementById(inputId); const file = inputElement.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const fileURL = e.target.result;
+                if (file.type.startsWith('image/')) {
+                    Swal.fire({ title: 'Soft-File Preview 🔍', imageUrl: fileURL, imageAlt: file.name, width: '90%', background: '#0f172a', color: '#fff', customClass: { popup: 'swal-game-popup rounded-[2rem]', title: 'swal-game-title text-cyan-400' }, showConfirmButton: false, showCloseButton: true });
+                } else if (file.type === 'application/pdf') {
+                    Swal.fire({ title: 'Soft-File Preview 🔍', html: `<iframe src="${fileURL}" class="w-full h-[60vh] rounded-xl border-0"></iframe>`, width: '90%', background: '#0f172a', color: '#fff', customClass: { popup: 'swal-game-popup rounded-[2rem]', title: 'swal-game-title text-cyan-400', htmlContainer: 'm-0 p-0' }, showConfirmButton: false, showCloseButton: true });
+                } else {
+                    Swal.fire({ title: 'No Preview', text: 'Tipe file ini tidak dapat dipreview langsung.', icon: 'info', background: '#0f172a', color: '#fff', customClass: { popup: 'swal-game-popup' } });
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function clearPeekFile(inputId, peekAreaId, fileNameId) {
+            const inputElement = document.getElementById(inputId);
+            inputElement.value = ""; 
+            document.getElementById(peekAreaId).classList.add('hidden');
+            document.getElementById(fileNameId).innerText = "";
+        }
+
+        async function promptReuploadSoftfile() {
+            const { value: file } = await Swal.fire({
+                title: 'Upload Intel 📂',
+                text: 'Maksimal 15MB (Gambar / PDF)',
+                input: 'file',
+                inputAttributes: { 'accept': 'image/*,application/pdf', 'aria-label': 'Upload soft-file' },
+                background: '#0f172a',
+                color: '#fff',
+                showCancelButton: true,
+                confirmButtonText: 'SET FILE',
+                cancelButtonText: 'CANCEL',
+                customClass: {
+                    popup: 'swal-game-popup rounded-[2rem]',
+                    title: 'swal-game-title text-cyan-400',
+                    confirmButton: 'btn-arcade btn-arcade-blue font-black rounded-2xl py-3 px-6',
+                    cancelButton: 'font-bold rounded-2xl py-3 px-6 text-slate-300 hover:text-white',
+                    input: 'file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-[10px] file:uppercase file:font-black file:bg-cyan-600 file:text-white hover:file:bg-cyan-700 text-sm text-slate-400'
+                }
+            });
+
+            if (file) {
+                if (file.size > 15 * 1024 * 1024) return showGameError('Too Large', 'Maximum file size is 15MB.');
+                const dt = new DataTransfer();
+                dt.items.add(file);
+                const fileInput = document.getElementById('detail_new_file');
+                fileInput.files = dt.files; 
+                handlePeekFileSelect(fileInput, 'detail_peek_area', 'detail_file_name');
+            }
+        }
+
+        function toggleRemoveOldFile() {
+            const cb = document.getElementById('detail_remove_file');
+            const btn = document.getElementById('btn_remove_old_file');
+            const viewLink = document.getElementById('detail_softcopy_link');
+
+            cb.checked = !cb.checked; 
+            if (cb.checked) {
+                btn.innerText = "CANCEL DESTROY";
+                btn.classList.replace('bg-red-500', 'bg-slate-500');
+                btn.classList.replace('hover:bg-red-600', 'hover:bg-slate-600');
+                viewLink.classList.add('opacity-50', 'line-through');
+            } else {
+                btn.innerText = "DESTROY";
+                btn.classList.replace('bg-slate-500', 'bg-red-500');
+                btn.classList.replace('hover:bg-slate-600', 'hover:bg-red-600');
+                viewLink.classList.remove('opacity-50', 'line-through');
+            }
+        }
+
+        function copyToClipboard(text) { const textArea = document.createElement("textarea"); textArea.value = text; textArea.style.top = "0"; textArea.style.left = "0"; textArea.style.position = "fixed"; document.body.appendChild(textArea); textArea.focus(); textArea.select(); try { document.execCommand('copy'); GameToast.fire({ title: 'Copied to Clipboard! 📋', icon: 'success' }); } catch (err) { console.error('Oops, unable to copy', err); } document.body.removeChild(textArea); }
+        function formatIDR(amount) { return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount || 0); }
+        function formatWaLink(number) { let clean = number.replace(/\D/g, ''); if(clean.startsWith('0')) clean = '62' + clean.substring(1); return `https://wa.me/${clean}`; }
+        function formatCurrencyInput(input) { let value = input.value.replace(/[^0-9]/g, ""); if (!value) { input.value = ""; return; } input.value = "Rp. " + parseInt(value).toLocaleString("id-ID"); }
+        function getRawValue(formattedStr) { return parseInt(formattedStr.replace(/[^0-9]/g, "")) || 0; }
+
+        function calculateProfit() {
+            const expense = getRawValue(document.getElementById('f_expense').value); const sell = getRawValue(document.getElementById('f_sell').value); const profit = sell - expense; const rate = expense > 0 ? (profit / expense * 100).toFixed(0) : 0;
+            document.getElementById('calc_profit_val').innerText = formatIDR(profit); document.getElementById('calc_profit_rate').innerText = rate + "%";
+            if (profit < 0) { document.getElementById('calc_profit_rate').classList.replace('text-emerald-400', 'text-rose-500'); document.getElementById('calc_profit_val').classList.replace('text-white', 'text-rose-400'); } else { document.getElementById('calc_profit_rate').classList.replace('text-rose-500', 'text-emerald-400'); document.getElementById('calc_profit_val').classList.replace('text-rose-400', 'text-white'); }
+        }
+
+        function autoFillClientInfo() {
+            const clientName = document.getElementById('f_client_select').value; const clientData = clientBook.find(c => c.Nama_Client === clientName);
+            if (clientData) { document.getElementById('f_entity').value = clientData.Entity || "-"; document.getElementById('f_wa').value = clientData.WA || "-"; } 
+            else { document.getElementById('f_entity').value = ""; document.getElementById('f_wa').value = ""; }
+        }
+
+        function autoFillVendorPayAmount() {
+            const sel = document.getElementById('vendorPaySelect').value; const inputAmount = document.getElementById('vendorPayAmount'); const inputVendor = document.getElementById('vendorPayVendorName');
+            if(!sel) { inputAmount.value = ""; inputVendor.value = ""; return; }
+            const [ts, name, vendorName] = sel.split('|'); inputVendor.value = (vendorName && vendorName !== 'Unknown Vendor') ? vendorName : "";
+            const p = allProjs.find(x => x.Timestamp === ts); if (p && p.Expense) { inputAmount.value = "Rp. " + parseInt(p.Expense).toLocaleString("id-ID"); } else { inputAmount.value = ""; }
+        }
+
+        function populateDropdown(id, items) {
+            const select = document.getElementById(id); const currentVal = select.value;
+            let defaultText = "Select Option...";
+            if (id === 'f_vendor') defaultText = "Choose Vendor / Ally...";
+            if (id === 'payBankSelect' || id === 'vendorPayBankSelect') defaultText = "Select Vault...";
+            select.innerHTML = `<option value="">${defaultText}</option>`;
+            if(items && Array.isArray(items)) { items.forEach(item => { const opt = document.createElement('option'); opt.value = item; opt.innerText = item; select.appendChild(opt); }); }
+            if (currentVal) select.value = currentVal;
+        }
+
+        function populateDynamicDropdown(id, list, selectedValue) {
+            const select = document.getElementById(id); 
+            select.innerHTML = '<option value="">(Empty Slot)</option>';
+            
+            if(list && Array.isArray(list)) { 
+                list.forEach(item => { 
+                    let label = ""; 
+                    let val = "";
+                    
+                    if(typeof item === 'object') {
+                        val = item.Nama_Client || item.name || JSON.stringify(item);
+                        label = item.Nama_Client || item.name || val;
+                        
+                        if(item.Entity && item.Entity.trim() !== "" && item.Entity !== "-") {
+                            label += " - " + item.Entity;
+                        }
+                    } else {
+                        val = item; 
+                        label = item;
+                    }
+                    
+                    const opt = document.createElement('option'); 
+                    opt.value = val; 
+                    opt.innerText = label; 
+                    
+                    if(val === selectedValue) opt.selected = true; 
+                    select.appendChild(opt); 
+                }); 
+            }
+        }
+
+        function extractVendorFromDesc(descString) { if(!descString) return ""; if(descString.includes('| Vendor:')) { return descString.split('| Vendor:')[1].split('|')[0].trim(); } return ""; }
+
+        async function loadData() {
+            const statusLabel = document.getElementById('connStatus');
+            statusLabel.innerHTML = `<span class="w-2 h-2 rounded-full bg-slate-400 animate-pulse"></span> Scanning...`;
+            try {
+                const res = await fetch(API_ENDPOINT, { method: 'POST', body: JSON.stringify({ action: "getDashboardData" }) });
+                if (!res.ok) throw new Error("Server Down");
+                const data = await res.json();
+                
+                if(data.status === "success") {
+                    allProjs = data.recent || []; const stats = data.stats || {};
+                    document.getElementById('statIncome').innerText = formatIDR(stats.totalIncome); document.getElementById('statReceivable').innerText = formatIDR(stats.accountReceivable); document.getElementById('statOngoing').innerText = stats.ongoing; document.getElementById('statMonthly').innerText = stats.monthlyProjects || 0; document.getElementById('statPaid').innerText = stats.paidProjects; document.getElementById('statUnpaid').innerText = stats.unpaidProjects;
+                    
+                    if (data.clients) { clientBook = data.clients; populateDynamicDropdown('f_client_select', data.clients, ""); }
+                    if (data.projectTypes) populateDropdown('f_type', data.projectTypes);
+                    if (data.paymentChannels) { paymentChannelList = data.paymentChannels; populateDropdown('f_pay_channel', data.paymentChannels); }
+                    if (data.vendors) { vendorListGlobal = data.vendors; populateDropdown('f_vendor', data.vendors); }
+                    if (data.vendorBank) { vendorBankGlobal = data.vendorBank; }
+                    if (data.banks) { populateDropdown('payBankSelect', data.banks); populateDropdown('vendorPayBankSelect', data.banks); }
+
+                    renderHome(allProjs); renderUnpaid(allProjs); renderVendorPayList(allProjs); renderClientPaymentTable(allProjs);
+                    sortJobTable('Timestamp'); 
+                    renderAdvancedStats(allProjs, stats); 
+                    renderTopClients(stats.topClients);
+                    
+                    if (document.getElementById('vendorBankPage') && !document.getElementById('vendorBankPage').classList.contains('hidden')) {
+                        renderVendorFilters(); renderVendorBankList();
+                    }
+
+                    statusLabel.innerHTML = `<span class="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></span> Uplink Established`;
+                } else { throw new Error(data.message); }
+            } catch (err) {
+                statusLabel.innerHTML = `<span class="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></span> ${err.message || 'Comms Down'}`;
+                showGameError('Data Error', err.message || 'Gagal menarik data dari server.');
+            }
+        }
+        
+        function renderVendorFilters() {
+            let allTags = new Set();
+            vendorBankGlobal.forEach(v => {
+                if(v.tags && Array.isArray(v.tags)) {
+                    v.tags.forEach(t => { if(t) allTags.add(t.toUpperCase()); });
+                }
+            });
+            
+            const cont = document.getElementById('vendorFilterTags');
+            cont.innerHTML = '';
+            
+            allTags.forEach(tag => {
+                const isActive = activeVendorTags.includes(tag);
+                const btn = document.createElement('button');
+                btn.className = `px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest whitespace-nowrap transition-all border ${isActive ? 'bg-indigo-500 text-white border-indigo-500 shadow-md' : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-50 shadow-sm'}`;
+                btn.innerText = `#${tag}`;
+                btn.onclick = () => toggleVendorFilter(tag);
+                cont.appendChild(btn);
+            });
+        }
+
+        function toggleVendorFilter(tag) {
+            if (activeVendorTags.includes(tag)) {
+                activeVendorTags = activeVendorTags.filter(t => t !== tag);
+            } else {
+                activeVendorTags.push(tag);
+            }
+            renderVendorFilters();
+            renderVendorBankList();
+        }
+
+        function renderVendorBankList() {
+            const cont = document.getElementById('vendorListContainer');
+            cont.innerHTML = '';
+            
+            let filtered = vendorBankGlobal;
+            if (activeVendorTags.length > 0) {
+                filtered = vendorBankGlobal.filter(v => activeVendorTags.some(tag => v.tags.map(t=>t.toUpperCase()).includes(tag)));
+            }
+            
+            if (filtered.length === 0) {
+                cont.innerHTML = '<div class="p-6 bg-slate-50 rounded-[2rem] text-center border-2 border-slate-100"><p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">No Vendors Found</p></div>';
+                return;
+            }
+
+            filtered.forEach(v => {
+                let tagHtml = '';
+                if(v.tags && Array.isArray(v.tags)) {
+                    tagHtml = v.tags.filter(t=>t).map(t => `<span class="bg-indigo-50 text-indigo-600 border border-indigo-100 px-2.5 py-1 rounded-lg text-[8px] font-black uppercase tracking-widest">#${t}</span>`).join('');
+                }
+                
+                let contactHtml = '';
+                if (v.contact) {
+                    contactHtml = `<a href="${formatWaLink(v.contact)}" target="_blank" class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center hover:bg-emerald-500 hover:text-white hover:scale-105 active:scale-95 transition-all shadow-sm shrink-0 border border-emerald-200"><i data-lucide="phone" class="w-5 h-5"></i></a>`;
+                }
+
+                cont.innerHTML += `
+                    <div class="flex justify-between items-center bg-white border-2 border-slate-100 p-5 rounded-[2rem] shadow-sm hover:border-indigo-200 transition-colors">
+                        <div class="overflow-hidden pr-4">
+                            <h5 class="font-black text-slate-800 text-sm truncate">${v.name}</h5>
+                            <div class="flex flex-wrap gap-1.5 mt-2">${tagHtml}</div>
+                        </div>
+                        ${contactHtml}
+                    </div>
+                `;
+            });
+            lucide.createIcons();
+        }
+
+        let newVendorTags = [];
+        
+        document.getElementById('v_tag_input').addEventListener('keydown', function(e) {
+            if (e.key === ' ' || e.key === 'Enter') {
+                e.preventDefault();
+                let val = this.value.trim().replace(/#/g, '').toUpperCase();
+                if (val && !newVendorTags.includes(val)) {
+                    newVendorTags.push(val);
+                    renderNewVendorTags();
+                }
+                this.value = '';
+            }
+            if (e.key === 'Backspace' && this.value === '' && newVendorTags.length > 0) {
+                newVendorTags.pop();
+                renderNewVendorTags();
+            }
+        });
+
+        function renderNewVendorTags() {
+            const cont = document.getElementById('v_tags_container');
+            cont.innerHTML = '';
+            newVendorTags.forEach(tag => {
+                const chip = document.createElement('div');
+                chip.className = "bg-indigo-600 text-white text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-xl flex items-center gap-1.5 shadow-sm";
+                chip.innerHTML = `#${tag} <button type="button" onclick="removeNewVendorTag('${tag}')" class="text-indigo-200 hover:text-white"><i data-lucide="x" class="w-3 h-3"></i></button>`;
+                cont.appendChild(chip);
+            });
+            lucide.createIcons();
+        }
+
+        function removeNewVendorTag(tagToRemove) {
+            newVendorTags = newVendorTags.filter(t => t !== tagToRemove);
+            renderNewVendorTags();
+        }
+
+        async function submitNewVendor() {
+            const name = document.getElementById('v_name').value;
+            const contact = document.getElementById('v_contact').value;
+            if (!name) return showGameError('Missing Info', 'Nama Vendor wajib diisi!');
+
+            const payload = { action: "addVendor", vendorName: name, contact: contact, tags: newVendorTags };
+
+            try { 
+                const data = await apiCallWithProgress(payload, 'Registering Vendor... 🏭'); 
+                if(data.status === "success") { 
+                    showGameSuccess('Vendor Added! 🏭', 'Vendor baru berhasil ditambahkan.'); 
+                    closeAllSheets(); 
+                    loadData(); 
+                } else { 
+                    throw new Error(data.message); 
+                } 
+            } catch (e) { showGameError('Glitch', e.message); }
+        }
+
+        function openAddVendorSheet() { 
+            document.getElementById('v_name').value = '';
+            document.getElementById('v_contact').value = '';
+            document.getElementById('v_tag_input').value = '';
+            newVendorTags = [];
+            renderNewVendorTags();
+            document.getElementById('overlay').classList.remove('hidden'); 
+            document.getElementById('addVendorSheet').classList.add('open'); 
+        }
+
+        function renderHome(recent) {
+            const cont = document.getElementById('projectContainer'); cont.innerHTML = '';
+            if(!recent || recent.length === 0) { cont.innerHTML = '<p class="text-xs text-slate-400 font-bold text-center py-4 uppercase tracking-widest">No recent quests.</p>'; return; }
+            recent.slice(0, 5).forEach(p => {
+                const isDone = p.ProjectStatus === 'DONE'; const iconColor = isDone ? 'text-emerald-500' : 'text-cyan-500'; const bgIcon = isDone ? 'bg-emerald-100' : 'bg-slate-800';
+                cont.innerHTML += `<div class="flex gap-4 p-5 bg-white rounded-[2rem] border-2 border-slate-100 shadow-sm cursor-pointer hover:border-indigo-300 transition-all group" onclick="openJobDetailSheet('${p.Timestamp}')"><div class="w-14 h-14 ${bgIcon} rounded-2xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-110"><i data-lucide="${isDone ? 'check-circle' : 'sword'}" class="w-6 h-6 ${iconColor}"></i></div><div class="flex-1 overflow-hidden py-1"><h5 class="font-black text-slate-800 text-sm truncate">${p.ProjectName}</h5><p class="text-[10px] font-bold text-slate-500 truncate mt-0.5">${p.Nama_Client}</p></div><div class="text-right shrink-0 py-1"><p class="font-black text-sm text-slate-800">${formatIDR(p.SellPrice)}</p><p class="text-[9px] font-black ${isDone ? 'text-emerald-500' : 'text-indigo-400'} mt-1 uppercase tracking-widest">${p.ProjectStatus || 'PENDING'}</p></div></div>`;
+            }); lucide.createIcons();
+        }
+
+        function renderUnpaid(recent) {
+            const sel = document.getElementById('paySelect'); const cont = document.getElementById('unpaidListContainer');
+            sel.innerHTML = '<option value="">Select Quest to Claim...</option>'; cont.innerHTML = '';
+            
+            // Filter ketat: Hanya muncul jika PaymentStatus BUKAN PAID dan Project tidak di-CANCEL
+            const unpaid = recent.filter(p => String(p.PaymentStatus || '').toUpperCase() !== 'PAID' && String(p.ProjectStatus || '').toUpperCase() !== 'CANCELLED');
+            
+            if(unpaid.length === 0) { cont.innerHTML = '<div class="p-6 bg-slate-50 rounded-[2rem] text-center border-2 border-slate-100"><p class="text-xs font-black text-slate-400 uppercase tracking-widest">No pending Earn.</p></div>'; return; }
+            
+            unpaid.forEach(p => {
+                sel.innerHTML += `<option value="${p.Timestamp}|${p.ProjectName}">${p.ProjectName} - ${p.Nama_Client} (${p.ProjectStatus || 'PENDING'})</option>`;
+                cont.innerHTML += `<div class="bg-white p-5 rounded-[2rem] border-2 border-orange-100 flex justify-between items-center shadow-sm"><div><h5 class="font-black text-slate-800 text-sm">${p.ProjectName}</h5><p class="text-[10px] font-bold text-slate-500">${p.Nama_Client} <span class="text-orange-400 font-black ml-1">• ${p.ProjectStatus || 'PENDING'}</span></p></div><div class="text-right"><p class="font-black text-orange-600 text-sm">${formatIDR(p.SellPrice)}</p></div></div>`;
+            });
+        }
+
+        function renderVendorPayList(recent) {
+            const sel = document.getElementById('vendorPaySelect'); const cont = document.getElementById('vendorUnpaidListContainer');
+            sel.innerHTML = '<option value="">Pilih Tagihan Vendor/Expense...</option>'; cont.innerHTML = '';
+            
+            // Filter ketat: Hanya muncul jika ada Expense, VendorPaymentStatus BUKAN PAID, dan tidak di-CANCEL
+            const vUnpaid = recent.filter(p => Number(p.Expense) > 0 && String(p.VendorPaymentStatus || '').toUpperCase() !== 'PAID' && String(p.ProjectStatus || '').toUpperCase() !== 'CANCELLED');
+            
+            if(vUnpaid.length === 0) { cont.innerHTML = '<div class="p-6 bg-slate-50 rounded-[2rem] text-center border-2 border-slate-100"><p class="text-xs font-black text-slate-400 uppercase tracking-widest">No pending vendor dispatch.</p></div>'; return; }
+            
+            vUnpaid.forEach(p => {
+                // Membaca VendorChoice dari backend, fallback ke cara lama jika kosong
+                const vName = p.VendorChoice || extractVendorFromDesc(p.Description) || 'Unknown Vendor';
+                sel.innerHTML += `<option value="${p.Timestamp}|${p.ProjectName}|${vName}">${p.ProjectName} - ${vName}</option>`;
+                cont.innerHTML += `<div class="bg-white p-5 rounded-[2rem] border-2 border-rose-100 flex justify-between items-center shadow-sm"><div><h5 class="font-black text-slate-800 text-sm">${p.ProjectName}</h5><p class="text-[10px] font-bold text-slate-500">${vName}</p></div><div class="text-right"><p class="font-black text-rose-600 text-sm">${formatIDR(p.Expense)}</p></div></div>`;
+            });
+        }
+
+        function renderClientPaymentTable(recent) {
+            const tbody = document.getElementById('clientPaymentTableBody'); tbody.innerHTML = ''; const stats = {};
+            recent.forEach(p => {
+                if(!p.Nama_Client) return;
+                if(!stats[p.Nama_Client]) stats[p.Nama_Client] = { net: 0, total: 0, ar: 0, ongoing: 0 };
+                stats[p.Nama_Client].total++; stats[p.Nama_Client].net += Number(p.SellPrice) || 0;
+                if(p.PaymentStatus !== 'PAID') stats[p.Nama_Client].ar += Number(p.SellPrice) || 0;
+                if(p.ProjectStatus === 'ONGOING') stats[p.Nama_Client].ongoing++;
+            });
+            Object.keys(stats).sort((a,b)=>stats[b].net - stats[a].net).forEach(c => {
+                const s = stats[c];
+                tbody.innerHTML += `<tr class="hover:bg-slate-50 transition-colors border-b border-slate-100"><td class="p-4 font-black text-slate-800 flex items-center gap-2"><div class="w-8 h-8 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center text-xs shadow-inner">${c.substring(0,2).toUpperCase()}</div> ${c}</td><td class="p-4 font-black text-emerald-600 text-right">${formatIDR(s.net)}</td><td class="p-4 font-bold text-slate-500 text-center">${s.total}</td><td class="p-4 font-black text-orange-500 text-right">${formatIDR(s.ar)}</td><td class="p-4 font-bold text-slate-500 text-center">${s.ongoing}</td></tr>`;
+            });
+        }
+
+        function sortJobTable(col) {
+            if(currentJobSort.key === col) { currentJobSort.dir = currentJobSort.dir === 'asc' ? 'desc' : 'asc'; } else { currentJobSort.key = col; currentJobSort.dir = 'asc'; }
+            allProjs.sort((a, b) => {
+                let valA = a[col] || ''; let valB = b[col] || '';
+                if (col === 'SellPrice' || col === 'Expense') { valA = Number(valA); valB = Number(valB); }
+                if (valA < valB) return currentJobSort.dir === 'asc' ? -1 : 1; if (valA > valB) return currentJobSort.dir === 'asc' ? 1 : -1; return 0;
+            }); renderJobTable();
+        }
+
+        function renderJobTable() {
+            const tbody = document.getElementById('jobTableBody'); tbody.innerHTML = '';
+            if(allProjs.length === 0) { tbody.innerHTML = '<tr><td colspan="6" class="p-6 text-center text-slate-400 font-bold text-xs uppercase tracking-widest">No Quests Found</td></tr>'; return; }
+            allProjs.forEach(p => {
+                const statusColor = p.ProjectStatus === 'DONE' ? 'text-emerald-500 bg-emerald-50 border-emerald-200' : p.ProjectStatus === 'ONGOING' ? 'text-indigo-500 bg-indigo-50 border-indigo-200' : 'text-slate-500 bg-slate-100 border-slate-200';
+                const payColor = p.PaymentStatus === 'PAID' ? 'text-emerald-500' : 'text-orange-500';
+                
+                const hasFile = (p.FileLink && p.FileLink.trim() !== "");
+                const fileChip = hasFile ? `<span class="inline-flex items-center justify-center bg-cyan-100 text-cyan-600 rounded-md p-1 ml-2 shadow-sm border border-cyan-200" title="Soft-file Attached"><i data-lucide="paperclip" class="w-3 h-3"></i></span>` : '';
+
+                tbody.innerHTML += `<tr class="hover:bg-slate-50 transition-colors border-b border-slate-50 cursor-pointer" onclick="openJobDetailSheet('${p.Timestamp}')"><td class="p-4 font-black text-slate-800 flex items-center">${p.ProjectName} ${fileChip}</td><td class="p-4 font-bold text-slate-500 text-xs">${p.Nama_Client}</td><td class="p-4 font-bold text-slate-500 text-xs">${p.Deadline ? new Date(p.Deadline).toLocaleDateString('id-ID') : '-'}</td><td class="p-4 text-center"><span class="text-[9px] font-black uppercase tracking-widest px-3 py-1.5 rounded-xl border ${statusColor}">${p.ProjectStatus || 'PENDING'}</span></td><td class="p-4 font-black text-slate-800 text-right">${formatIDR(p.SellPrice)}</td><td class="p-4 font-black ${payColor} text-center text-xs uppercase tracking-widest">${p.PaymentStatus || 'UNPAID'}</td></tr>`;
+            }); lucide.createIcons();
+        }
+
+        function renderTopClients(topClients) {
+            const cont = document.getElementById('topClientsList'); cont.innerHTML = ''; if(!topClients || topClients.length === 0) return;
+            topClients.slice(0, 3).forEach((c, idx) => {
+                const rankIcon = idx === 0 ? '🏆' : idx === 1 ? '🥈' : '🥉';
+                cont.innerHTML += `<div class="flex justify-between items-center bg-white/10 p-4 rounded-2xl backdrop-blur-sm border border-white/10"><div class="flex items-center gap-3"><span class="text-2xl">${rankIcon}</span><div><p class="font-black text-sm text-white">${c.name}</p><p class="text-[10px] text-indigo-200 font-bold uppercase tracking-widest">${c.projects} Quests</p></div></div><p class="font-black text-yellow-400">${formatIDR(c.value)}</p></div>`;
+            });
+        }
+
+        function toggleClientAccordion(accId, iconId) {
+            const acc = document.getElementById(accId);
+            const icon = document.getElementById(iconId);
+            if (acc.classList.contains('hidden')) {
+                acc.classList.remove('hidden');
+                icon.classList.add('rotate-180');
+            } else {
+                acc.classList.add('hidden');
+                icon.classList.remove('rotate-180');
+            }
+        }
+
+        function renderAdvancedStats(projs, backendStats) {
+            if (!projs || projs.length === 0) return;
+
+            let funnel = { PENDING: 0, ONGOING: 0, DONE: 0, CANCELLED: 0 };
+            let monthlyData = {};
+            let clientDataMap = {}; 
+            let totalExp = 0;
+            let totalInc = 0;
+
+            let sortedProjs = [...projs].sort((a,b) => new Date(a.Timestamp) - new Date(b.Timestamp));
+
+            sortedProjs.forEach(p => {
+                let st = p.ProjectStatus ? p.ProjectStatus.toUpperCase() : 'PENDING';
+                if (funnel[st] !== undefined) funnel[st]++;
+                else funnel['PENDING']++;
+
+                if (p.Nama_Client) {
+                    if (!clientDataMap[p.Nama_Client]) clientDataMap[p.Nama_Client] = { count: 0, value: 0, projects: [] };
+                    clientDataMap[p.Nama_Client].count++;
+                    clientDataMap[p.Nama_Client].value += (Number(p.SellPrice) || 0);
+                    clientDataMap[p.Nama_Client].projects.push(p);
+                }
+
+                let d = new Date(p.Timestamp);
+                if (!isNaN(d)) {
+                    let m = d.toLocaleString('id-ID', { month: 'short', year: 'numeric' });
+                    if (!monthlyData[m]) monthlyData[m] = { inc: 0, exp: 0, count: 0 };
+
+                    monthlyData[m].count++;
+                    let inc = Number(p.SellPrice) || 0;
+                    let exp = Number(p.Expense) || 0;
+
+                    if (p.PaymentStatus === 'PAID') {
+                        monthlyData[m].inc += inc;
+                        totalInc += inc;
+                    }
+                    if (st !== 'CANCELLED') {
+                        monthlyData[m].exp += exp;
+                        totalExp += exp;
+                    }
+                }
+            });
+
+            let totalProfit = totalInc - totalExp;
+            let totalClients = Object.keys(clientDataMap).length;
+            let recurringCount = Object.values(clientDataMap).filter(v => v.count > 1).length;
+            let recurringRate = totalClients ? Math.round((recurringCount / totalClients) * 100) : 0;
+
+            document.getElementById('statTotalProfit').innerText = formatIDR(totalProfit);
+            document.getElementById('statTotalExpense').innerText = formatIDR(totalExp);
+            document.getElementById('statRecurring').innerText = recurringRate + '%';
+
+            document.getElementById('funnelPending').innerText = funnel.PENDING;
+            document.getElementById('funnelOngoing').innerText = funnel.ONGOING;
+            document.getElementById('funnelDone').innerText = funnel.DONE;
+
+            const recCont = document.getElementById('recurringClientsList');
+            if (recCont) {
+                recCont.innerHTML = '';
+                const recurringClients = Object.keys(clientDataMap)
+                    .filter(c => clientDataMap[c].count > 1)
+                    .sort((a, b) => clientDataMap[b].count - clientDataMap[a].count);
+
+                if (recurringClients.length === 0) {
+                    recCont.innerHTML = '<div class="text-center p-4 text-slate-400 text-xs font-bold uppercase tracking-widest">No recurring players yet.</div>';
+                } else {
+                    recurringClients.forEach((c, idx) => {
+                        const data = clientDataMap[c];
+                        const accId = `acc_rec_${idx}`;
+                        const iconId = `icon_rec_${idx}`;
+
+                        let projListHtml = data.projects.map(proj => {
+                            const stColor = proj.ProjectStatus === 'DONE' ? 'text-emerald-500' : (proj.ProjectStatus === 'ONGOING' ? 'text-indigo-500' : 'text-slate-500');
+                            const d = proj.Timestamp ? new Date(proj.Timestamp).toLocaleDateString('id-ID') : '-';
+                            return `<div class="flex justify-between items-center p-3 border-b border-slate-100 last:border-0 hover:bg-slate-50 transition-colors">
+                                <div class="overflow-hidden pr-2">
+                                    <p class="text-xs font-black text-slate-700 truncate">${proj.ProjectName}</p>
+                                    <p class="text-[9px] font-bold text-slate-400">${d}</p>
+                                </div>
+                                <div class="text-right shrink-0">
+                                    <p class="text-xs font-black text-slate-700">${formatIDR(proj.SellPrice)}</p>
+                                    <p class="text-[9px] font-black uppercase tracking-widest ${stColor}">${proj.ProjectStatus || 'PENDING'}</p>
+                                </div>
+                            </div>`;
+                        }).join('');
+
+                        recCont.innerHTML += `
+                            <div class="border-2 border-slate-100 rounded-[1.5rem] overflow-hidden mb-3 transition-colors hover:border-indigo-200">
+                                <button onclick="toggleClientAccordion('${accId}', '${iconId}')" class="w-full bg-slate-50 hover:bg-indigo-50/50 p-4 flex justify-between items-center focus:outline-none transition-colors">
+                                    <div class="flex items-center gap-3 text-left">
+                                        <div class="w-10 h-10 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center font-black shadow-inner shrink-0">${c.substring(0, 2).toUpperCase()}</div>
+                                        <div class="overflow-hidden">
+                                            <h5 class="font-black text-slate-800 text-sm truncate">${c}</h5>
+                                            <p class="text-[10px] font-bold text-indigo-500 uppercase tracking-widest">${data.count} Quests <span class="text-slate-300">|</span> ${formatIDR(data.value)}</p>
+                                        </div>
+                                    </div>
+                                    <div class="p-2 bg-white shadow-sm border border-slate-200 rounded-xl shrink-0 ml-2">
+                                        <i data-lucide="chevron-down" id="${iconId}" class="w-4 h-4 text-slate-500 transition-transform duration-300"></i>
+                                    </div>
+                                </button>
+                                <div id="${accId}" class="hidden bg-white border-t border-slate-100 px-4 py-2 max-h-64 overflow-y-auto table-scroll">
+                                    ${projListHtml}
+                                </div>
+                            </div>
+                        `;
+                    });
+                    setTimeout(() => lucide.createIcons(), 50);
+                }
+            }
+
+            if(cashflowChart) cashflowChart.destroy();
+            if(growthChart) growthChart.destroy();
+            if(categoryChart) categoryChart.destroy();
+            if(paymentChannelChart) paymentChannelChart.destroy();
+
+            const labels = Object.keys(monthlyData);
+            const incData = labels.map(l => monthlyData[l].inc);
+            const expData = labels.map(l => monthlyData[l].exp);
+            const countData = labels.map(l => monthlyData[l].count);
+
+            const commonOptions = { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#64748b', font: { family: "'Plus Jakarta Sans', sans-serif", weight: 'bold' } } } } };
+
+            const cfCtx = document.getElementById('cashflowChart');
+            if(cfCtx) cashflowChart = new Chart(cfCtx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        { label: 'Income', data: incData, backgroundColor: '#10b981', borderRadius: 4 },
+                        { label: 'Expense', data: expData, backgroundColor: '#f43f5e', borderRadius: 4 }
+                    ]
+                },
+                options: { ...commonOptions, scales: { y: { ticks: { color: '#94a3b8' }, grid: { color: '#f1f5f9' } }, x: { ticks: { color: '#94a3b8' }, grid: { display: false } } } }
+            });
+
+            const grCtx = document.getElementById('growthChart');
+            if(grCtx) growthChart = new Chart(grCtx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{ label: 'Quests Created', data: countData, borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.2)', borderWidth: 3, tension: 0.4, fill: true, pointBackgroundColor: '#60a5fa' }]
+                },
+                options: { ...commonOptions, scales: { y: { beginAtZero: true, ticks: { color: '#94a3b8', stepSize: 1 }, grid: { color: '#f1f5f9' } }, x: { ticks: { color: '#94a3b8' }, grid: { display: false } } } }
+            });
+
+            const catCtx = document.getElementById('categoryChart');
+            if(catCtx && backendStats && backendStats.categories) categoryChart = new Chart(catCtx, { type: 'doughnut', data: { labels: Object.keys(backendStats.categories), datasets: [{ data: Object.values(backendStats.categories), backgroundColor: ['#10b981', '#3b82f6', '#8b5cf6', '#f59e0b', '#f43f5e', '#06b6d4'], borderWidth: 0 }] }, options: { ...commonOptions, plugins: { legend: { position: 'right', labels: { boxWidth: 12, color: '#64748b', font: { size: 10, weight: 'bold' } } } }, cutout: '70%' } });
+
+            const chanCtx = document.getElementById('paymentChannelChart');
+            if(chanCtx && backendStats && backendStats.paymentChannels) paymentChannelChart = new Chart(chanCtx, { type: 'bar', data: { labels: Object.keys(backendStats.paymentChannels), datasets: [{ label: 'Freq', data: Object.values(backendStats.paymentChannels), backgroundColor: '#8b5cf6', borderRadius: 8 }] }, options: { ...commonOptions, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { color: '#94a3b8', stepSize: 1 }, grid: { color: '#f1f5f9' } }, x: { ticks: { color: '#94a3b8' }, grid: { display: false } } } } });
+        }
+
+        function openJobDetailSheet(timestamp) {
+            isEditMode = false; 
+            document.getElementById('btnEditJob').classList.remove('bg-indigo-600', 'text-white'); 
+            document.getElementById('btnSaveEdits').classList.add('hidden'); 
+            
+            document.getElementById('detail_softcopy_edit').classList.add('hidden');
+            document.getElementById('detail_softcopy_view').classList.remove('hidden');
+
+            const p = allProjs.find(x => x.Timestamp === timestamp); if (!p) return;
+            document.getElementById('detail_ts').value = timestamp; document.getElementById('detail_old_name').value = p.ProjectName; document.getElementById('detail_name').value = p.ProjectName; document.getElementById('detail_status').value = p.ProjectStatus || "PENDING";
+            let isoDate = ""; if (p.Deadline || p.Date) { const d = new Date(p.Deadline || p.Date); if (!isNaN(d)) isoDate = d.toISOString().split('T')[0]; }
+            document.getElementById('detail_deadline').value = isoDate; document.getElementById('detail_price').value = p.SellPrice ? "Rp. " + parseInt(p.SellPrice).toLocaleString('id-ID') : "";
+            populateDynamicDropdown('detail_client', clientBook, p.Nama_Client); const vendorDetected = extractVendorFromDesc(p.Description); populateDynamicDropdown('detail_vendor', vendorListGlobal, vendorDetected);
+            
+            let fileLink = p.FileLink || p.Softcopy || p.SoftFile || p.SoftcopyLink || p.Attachment || null;
+            const linkBtn = document.getElementById('detail_softcopy_link'); const noFile = document.getElementById('detail_no_file');
+            const removeWrapper = document.getElementById('detail_remove_wrapper');
+            
+            if (fileLink && String(fileLink).startsWith('http')) { 
+                linkBtn.href = fileLink; linkBtn.classList.remove('hidden'); noFile.classList.add('hidden'); 
+                if(removeWrapper) removeWrapper.classList.remove('hidden', 'flex');
+            } else { 
+                linkBtn.classList.add('hidden'); noFile.classList.remove('hidden'); 
+                if(removeWrapper) removeWrapper.classList.add('hidden');
+            }
+            
+            clearPeekFile('detail_new_file', 'detail_peek_area', 'detail_file_name');
+            
+            const cb = document.getElementById('detail_remove_file');
+            if (cb) {
+                cb.checked = false;
+                const btnRemove = document.getElementById('btn_remove_old_file');
+                if (btnRemove) {
+                    btnRemove.innerText = "DESTROY";
+                    btnRemove.classList.remove('bg-slate-500', 'hover:bg-slate-600');
+                    btnRemove.classList.add('bg-red-500', 'hover:bg-red-600');
+                }
+                linkBtn.classList.remove('opacity-50', 'line-through');
+            }
+            
+            toggleInputsDisable(true); document.getElementById('overlay').classList.remove('hidden'); document.getElementById('jobDetailSheet').classList.add('open');
+        }
+
+        function toggleInputsDisable(disabled) {
+            const statusSelect = document.getElementById('detail_status'); statusSelect.disabled = disabled; statusSelect.classList.toggle('cursor-default', disabled); statusSelect.classList.toggle('cursor-pointer', !disabled);
+            if(!disabled) { statusSelect.classList.replace('bg-transparent', 'bg-white'); statusSelect.parentElement.classList.add('border-indigo-400', 'bg-white'); statusSelect.parentElement.classList.remove('bg-slate-50', 'border-slate-100', 'bg-indigo-50'); } 
+            else { statusSelect.classList.replace('bg-white', 'bg-transparent'); statusSelect.parentElement.classList.remove('border-indigo-400', 'bg-white'); statusSelect.parentElement.classList.add('bg-slate-50', 'border-slate-100'); }
+        }
+
+        function toggleEditMode() {
+            isEditMode = !isEditMode; 
+            const editBtn = document.getElementById('btnEditJob'); 
+            const saveBtn = document.getElementById('btnSaveEdits'); 
+            const fileEdit = document.getElementById('detail_softcopy_edit');
+            const fileView = document.getElementById('detail_softcopy_view');
+
+            if (isEditMode) { 
+                editBtn.classList.add('bg-indigo-600', 'text-white', 'border-indigo-600'); 
+                editBtn.classList.remove('bg-white', 'text-slate-50', 'border-slate-200'); 
+                saveBtn.classList.remove('hidden'); 
+                fileEdit.classList.remove('hidden'); 
+                fileView.classList.add('hidden'); 
+                toggleInputsDisable(false); 
+            } else { 
+                editBtn.classList.remove('bg-indigo-600', 'text-white', 'border-indigo-600'); 
+                editBtn.classList.add('bg-white', 'text-slate-50', 'border-slate-200'); 
+                saveBtn.classList.add('hidden'); 
+                fileEdit.classList.add('hidden'); 
+                fileView.classList.remove('hidden'); 
+                toggleInputsDisable(true); 
+            }
+        }
+
+        async function promptAuthPin() {
+            const { value: pin } = await Swal.fire({ title: 'Security Override 🛡️', text: 'Enter access PIN to proceed', input: 'password', inputAttributes: { inputmode: 'numeric', maxlength: 6 }, showCancelButton: true, confirmButtonColor: '#4f46e5', confirmButtonText: 'Verify Identity', background: '#0f172a', color: '#fff', customClass: { popup: 'swal-game-popup', title: 'swal-game-title text-indigo-400', confirmButton: 'btn-arcade btn-arcade-blue font-black rounded-2xl py-3 px-6', cancelButton: 'font-bold rounded-2xl py-3 px-6 text-slate-300 hover:text-white', input: 'text-center text-xl font-black tracking-widest bg-slate-800 text-white border border-slate-700 focus:border-indigo-500 rounded-xl py-3' } });
+            
+            if (!pin) return false;
+            
+            showGameLoading('Verifying Identity... 🛡️');
+            try {
+                const res = await fetch(API_ENDPOINT, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: "validatePin", pin: pin })
+                });
+                const data = await res.json();
+                
+                if (data.status === "success") {
+                    Swal.close();
+                    return true;
+                } else {
+                    showGameError('Access Denied', 'Invalid PIN code entered.');
+                    return false;
+                }
+            } catch (e) {
+                showGameError('Glitch', e.message);
+                return false;
+            }
+        }
+
+        async function confirmDeleteJob() {
+            const isAuthorized = await promptAuthPin();
+            if (!isAuthorized) return;
+
+            const name = document.getElementById('detail_old_name').value;
+            const ts = document.getElementById('detail_ts').value;
+
+            const { isConfirmed } = await Swal.fire({
+                title: 'DESTROY QUEST? 💣',
+                text: `Quest "${name}" akan dihapus PERMANEN dari Database!`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#334155',
+                confirmButtonText: 'YES, DESTROY!',
+                cancelButtonText: 'CANCEL',
+                background: '#0f172a',
+                color: '#fff',
+                customClass: { popup: 'swal-game-popup', title: 'swal-game-title text-rose-500', confirmButton: 'btn-arcade font-black rounded-2xl py-3 px-6 bg-rose-500', cancelButton: 'font-bold rounded-2xl py-3 px-6 text-slate-300 hover:text-white' }
+            });
+
+            if (!isConfirmed) return;
+
+            closeAllSheets();
+            showGameLoading('Destroying Quest... 💥');
+
+            try {
+                const payload = { action: "deleteProject", projectName: name, timestamp: ts };
+                const res = await fetch(API_ENDPOINT, { method: 'POST', body: JSON.stringify(payload) });
+                const data = await res.json();
+                
+                if(data.status === "success") {
+                    showGameSuccess('Wiped Out! 💥', `Quest "${name}" berhasil dihapus permanen.`);
+                    loadData();
+                } else {
+                    throw new Error(data.message);
+                }
+            } catch (e) {
+                showGameError('Glitch', e.message);
+            }
+        }
+
+        function apiCallWithProgress(payload, loadingMessage) {
+            return new Promise((resolve, reject) => {
+                Swal.fire({
+                    title: loadingMessage,
+                    html: `
+                        <div class="mt-5">
+                            <div class="flex justify-between text-[10px] font-black uppercase tracking-widest text-cyan-300 mb-2">
+                                <span id="swal-progress-detail">Transmitting Payload...</span>
+                                <span id="swal-progress-text">0%</span>
+                            </div>
+                            <div class="w-full bg-slate-800 rounded-full h-4 border border-slate-700 overflow-hidden shadow-inner">
+                                <div id="swal-progress-bar" class="bg-gradient-to-r from-cyan-400 via-indigo-500 to-fuchsia-500 h-full rounded-full transition-all duration-200" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    `,
+                    showConfirmButton: false,
+                    allowOutsideClick: false,
+                    background: '#0f172a',
+                    color: '#fff',
+                    customClass: { popup: 'swal-game-popup', title: 'swal-game-title text-cyan-400' }
+                });
+
+                const xhr = new XMLHttpRequest();
+                xhr.open('POST', API_ENDPOINT, true);
+                xhr.setRequestHeader('Content-Type', 'text/plain;charset=utf-8');
+
+                xhr.upload.onprogress = function(e) {
+                    if (e.lengthComputable) {
+                        const percentComplete = Math.round((e.loaded / e.total) * 100);
+                        const progressBar = document.getElementById('swal-progress-bar');
+                        const progressText = document.getElementById('swal-progress-text');
+                        const progressDetail = document.getElementById('swal-progress-detail');
+                        if(progressBar) progressBar.style.width = percentComplete + '%';
+                        if(progressText) progressText.innerText = percentComplete + '%';
+                        if(progressDetail && percentComplete === 100) progressDetail.innerText = "Processing in Server... ⚙️";
+                    }
+                };
+
+                xhr.onload = function() {
+                    if (xhr.status >= 200 && xhr.status < 300) {
+                        try { const response = JSON.parse(xhr.responseText); resolve(response); }
+                        catch (e) { reject(new Error("Invalid JSON response")); }
+                    } else { reject(new Error("Request failed with status " + xhr.status)); }
+                };
+
+                xhr.onerror = function() { reject(new Error("Network connection error.")); };
+                xhr.send(JSON.stringify(payload));
+            });
+        }
+
+        async function confirmSaveEdits() {
+            const isAuthorized = await promptAuthPin(); if(!isAuthorized) return;
+            const name = document.getElementById('detail_old_name').value; const ts = document.getElementById('detail_ts').value; const status = document.getElementById('detail_status').value;
+            
+            const removeFile = document.getElementById('detail_remove_file').checked;
+            const fileIn = document.getElementById('detail_new_file');
+            let filePayload = null;
+            
+            if (fileIn.files.length > 0) { 
+                const file = fileIn.files[0]; 
+                if (file.size > 15 * 1024 * 1024) return showGameError('Too Large', 'Maximum file size is 15MB.'); 
+                
+                Swal.fire({ title: 'Optimizing Intel... ⏳', html: '<div class="w-12 h-12 border-4 border-indigo-500 border-t-cyan-400 rounded-full animate-spin mx-auto my-4"></div><p class="text-xs text-slate-400 uppercase tracking-widest font-bold">Compressing & Preparing File</p>', showConfirmButton: false, allowOutsideClick: false, background: '#0f172a', color: '#fff', customClass: { popup: 'swal-game-popup', title: 'swal-game-title text-cyan-400' } });
+
+                // Menggunakan Optimizer
+                const processed = await processFileForUpload(file);
+                filePayload = { fileData: processed.data, fileName: processed.name, fileType: processed.type };
+            }
+
+            closeAllSheets(); 
+            updateStatusDirect(name, ts, status, filePayload, removeFile);
+        }
+
+        async function saveNewProject() {
+            const f_name = document.getElementById('f_name').value; const f_client = document.getElementById('f_client_select').value;
+            if(!f_name || !f_client) return showGameError('Missing Info', 'Judul Quest dan Client wajib diisi!');
+            
+            const payload = { 
+                action: "addProject", 
+                projectName: f_name, 
+                clientName: f_client, 
+                wa: document.getElementById('f_wa').value, 
+                entity: document.getElementById('f_entity').value, 
+                projectType: document.getElementById('f_type').value, 
+                paymentChannel: document.getElementById('f_pay_channel').value, 
+                vendor: document.getElementById('f_vendor').value, 
+                description: document.getElementById('f_desc').value, 
+                expense: getRawValue(document.getElementById('f_expense').value), 
+                sellPrice: getRawValue(document.getElementById('f_sell').value), 
+                deadline: document.getElementById('f_date').value + " " + document.getElementById('f_time').value 
+            };
+            
+            const fileIn = document.getElementById('f_softcopy');
+            if (fileIn.files.length > 0) { 
+                const file = fileIn.files[0]; 
+                if (file.size > 15 * 1024 * 1024) return showGameError('Too Large', 'Maximum file size is 15MB.'); 
+                Swal.fire({ title: 'Optimizing Intel... ⏳', html: '<div class="w-12 h-12 border-4 border-indigo-500 border-t-cyan-400 rounded-full animate-spin mx-auto my-4"></div><p class="text-xs text-slate-400 uppercase tracking-widest font-bold">Compressing & Preparing File</p>', showConfirmButton: false, allowOutsideClick: false, background: '#0f172a', color: '#fff', customClass: { popup: 'swal-game-popup', title: 'swal-game-title text-cyan-400' } });
+                
+                // Menggunakan Optimizer
+                const processed = await processFileForUpload(file);
+                payload.fileData = processed.data; payload.fileName = processed.name; payload.fileType = processed.type; 
+            }
+            
+            try { 
+                const data = await apiCallWithProgress(payload, 'Creating Quest... 🚀'); 
+                if(data.status === "success") { showGameSuccess('Quest Started! ⚔️', 'Berhasil ditambahkan ke Journal.'); closeAllSheets(); setTimeout(() => loadData(), 1500); } else { throw new Error(data.message); } 
+            } catch(e) { showGameError('Glitch', e.message); }
+        }
+
+        async function submitNewClient() {
+            const payload = { action: "addClient", namaClient: document.getElementById('c_name').value, entity: document.getElementById('c_entity').value, wa: document.getElementById('c_wa').value, location: document.getElementById('c_loc').value };
+            if(!payload.namaClient || !payload.wa) return showGameError('Missing Info', 'Nama & Comm Link wajib diisi!');
+            showGameLoading('Registering Player... 🎮');
+            try { const res = await fetch(API_ENDPOINT, { method: 'POST', body: JSON.stringify(payload) }); const data = await res.json(); if(data.status === "success") { showGameSuccess('Player Registered! 👾', 'Silakan pilih player di dropdown quest.'); closeAddClientSheet(); loadData(); } else { throw new Error(data.message); } } catch (e) { showGameError('Glitch', e.message); }
+        }
+
+        async function updateStatusDirect(name, ts, newStatus, filePayload = null, removeFile = false) {
+            const payload = { action: "updateStatus", projectName: name, timestamp: ts, newStatus: newStatus, removeFile: removeFile }; 
+            if(filePayload) {
+                payload.fileData = filePayload.fileData;
+                payload.fileName = filePayload.fileName;
+                payload.fileType = filePayload.fileType;
+            }
+            
+            try { 
+                const data = await apiCallWithProgress(payload, 'Syncing Checkpoint... ⚙️'); 
+                if(data.status === "success") { 
+                    const projIndex = allProjs.findIndex(p => p.Timestamp === ts);
+                    if(projIndex !== -1) {
+                        allProjs[projIndex].ProjectStatus = newStatus;
+                        if (removeFile) { allProjs[projIndex].FileLink = ""; allProjs[projIndex].Softcopy = ""; }
+                        
+                        const newUrl = data.fileLink || data.url || data.FileLink || data.Softcopy;
+                        if (newUrl) {
+                            allProjs[projIndex].FileLink = newUrl;
+                            allProjs[projIndex].Softcopy = newUrl;
+                        }
+                    }
+
+                    GameToast.fire({ title: 'Checkpoint Saved! ✨', icon: 'success' }); 
+                    setTimeout(() => loadData(), 1500); 
+                } else { throw new Error(data.message); } 
+            } catch (e) { showGameError('Glitch', e.message); loadData(); }
+        }
+        function formatCurrencyInput(el) { el.value = "Rp. " + el.value.replace(/[^0-9]/g, "").replace(/\B(?=(\d{3})+(?!\d))/g, "."); }
+        function getRawValue(str) { return parseInt(str.replace(/[^0-9]/g, "")) || 0; }
+
+        function switchView(id, title) {
+            document.querySelectorAll('.view-content').forEach(v => v.classList.add('hidden'));
+            document.getElementById(id).classList.remove('hidden'); document.getElementById('pageTitle').innerText = title;
+            document.querySelectorAll('.nav-btn').forEach(btn => { btn.classList.replace('text-indigo-600', 'text-slate-400'); btn.classList.remove('bg-white/50'); });
+            event.currentTarget.classList.replace('text-slate-400', 'text-indigo-600'); event.currentTarget.classList.add('bg-white/50');
+            
+            if(id === 'vendorBankPage') { renderVendorFilters(); renderVendorBankList(); }
+            if(id === 'statsPage') { 
+                setTimeout(() => { 
+                    if(cashflowChart) cashflowChart.resize(); 
+                    if(growthChart) growthChart.resize(); 
+                    if(categoryChart) categoryChart.resize(); 
+                    if(paymentChannelChart) paymentChannelChart.resize(); 
+                }, 100); 
+            }
+        }
+
+        function openAddSheet() { document.getElementById('overlay').classList.remove('hidden'); document.getElementById('addSheet').classList.add('open'); }
+        function openAddClientSheet() { document.getElementById('addClientSheet').classList.add('open'); }
+        function closeAddClientSheet() { document.getElementById('addClientSheet').classList.remove('open'); }
+        function openPaySheet() { document.getElementById('overlay').classList.remove('hidden'); document.getElementById('paySheet').classList.add('open'); }
+        function openPayVendorSheet() { document.getElementById('overlay').classList.remove('hidden'); document.getElementById('payVendorSheet').classList.add('open'); }
+        
+        // --- PAYMENT SUBMISSION FUNCTIONS ---
+        async function submitPayment() {
+            const ts = document.getElementById('paySelect').value;
+            const bank = document.getElementById('payBankSelect').value;
+            const fileInput = document.getElementById('payFile');
+            
+            if(!ts || !bank) return showGameError('Missing Info', 'Pilih Quest dan Vault tujuan!');
+            
+            const [timestamp, projectName] = ts.split('|');
+            const payload = { action: "recordPayment", timestamp, projectName, payBank: bank };
+            
+            if (fileInput.files.length > 0) {
+                Swal.fire({ title: 'Optimizing Receipt... ⏳', html: '<div class="w-12 h-12 border-4 border-indigo-500 border-t-cyan-400 rounded-full animate-spin mx-auto my-4"></div>', showConfirmButton: false, allowOutsideClick: false, background: '#0f172a', color: '#fff', customClass: { popup: 'swal-game-popup', title: 'swal-game-title text-cyan-400' } });
+                const processed = await processFileForUpload(fileInput.files[0]);
+                payload.fileData = processed.data; payload.fileName = processed.name; payload.fileType = processed.type;
+            }
+            
+            try {
+                const data = await apiCallWithProgress(payload, 'Processing Payment... 💸');
+                if(data.status === "success") { showGameSuccess('Earn Secured! 💰', 'Pembayaran berhasil dicatat.'); closeAllSheets(); setTimeout(() => loadData(), 1500); }
+                else throw new Error(data.message);
+            } catch(e) { showGameError('Error', e.message); }
+        }
+
+        async function submitVendorPayment() {
+            const tsInfo = document.getElementById('vendorPaySelect').value;
+            const bank = document.getElementById('vendorPayBankSelect').value;
+            const fileInput = document.getElementById('vendorPayFile');
+            const vName = document.getElementById('vendorPayVendorName').value;
+            const amtStr = document.getElementById('vendorPayAmount').value;
+            
+            if(!tsInfo || !bank || !vName || !amtStr) return showGameError('Missing Info', 'Harap lengkapi semua data dispatch!');
+            
+            const [timestamp, projectName] = tsInfo.split('|');
+            const payload = { action: "recordVendorPayment", timestamp, projectName, bank, vendor: vName, payToVendor: getRawValue(amtStr) };
+            
+            if (fileInput.files.length > 0) {
+                Swal.fire({ title: 'Optimizing Receipt... ⏳', html: '<div class="w-12 h-12 border-4 border-indigo-500 border-t-cyan-400 rounded-full animate-spin mx-auto my-4"></div>', showConfirmButton: false, allowOutsideClick: false, background: '#0f172a', color: '#fff', customClass: { popup: 'swal-game-popup', title: 'swal-game-title text-cyan-400' } });
+                const processed = await processFileForUpload(fileInput.files[0]);
+                payload.fileData = processed.data; payload.fileName = processed.name; payload.fileType = processed.type;
+            }
+            
+            try {
+                const data = await apiCallWithProgress(payload, 'Dispatching Pay... 🚀');
+                if(data.status === "success") { showGameSuccess('Dispatched! 📡', 'Pembayaran vendor berhasil dikirim.'); closeAllSheets(); setTimeout(() => loadData(), 1500); }
+                else throw new Error(data.message);
+            } catch(e) { showGameError('Error', e.message); }
+        }
+
+        function closeAllSheets() {
+            document.getElementById('overlay').classList.add('hidden'); document.querySelectorAll('.bottom-sheet').forEach(s => s.classList.remove('open')); isEditMode = false;
+            const resets = [ { id: 'detail_new_file', cb: 'detail_remove_file', cont: 'detail_preview_cont', img: 'detail_preview_img' }, { id: 'f_softcopy', cont: 'f_preview_cont', img: 'f_preview_img' }, { id: 'payFile', cont: 'pay_preview_cont', img: 'pay_preview_img' }, { id: 'vendorPayFile', cont: 'vendor_preview_cont', img: 'vendor_preview_img' } ];
+            resets.forEach(r => { if(document.getElementById(r.id)) document.getElementById(r.id).value = ""; if(r.cb && document.getElementById(r.cb)) document.getElementById(r.cb).checked = false; if(document.getElementById(r.cont)) document.getElementById(r.cont).classList.add('hidden'); if(document.getElementById(r.img)) document.getElementById(r.img).src = ""; });
+            
+            // Tutup semua peek yang terbuka
+            if(document.getElementById('f_peek_area')) document.getElementById('f_peek_area').classList.add('hidden');
+            if(document.getElementById('detail_peek_area')) document.getElementById('detail_peek_area').classList.add('hidden');
+            
+            // Reset form Vendor Baru
+            if(document.getElementById('v_name')) document.getElementById('v_name').value = '';
+            if(document.getElementById('v_contact')) document.getElementById('v_contact').value = '';
+            if(document.getElementById('v_tag_input')) document.getElementById('v_tag_input').value = '';
+            newVendorTags = [];
+            if (document.getElementById('v_tags_container')) document.getElementById('v_tags_container').innerHTML = '';
+        }
+    </script>
+</body>
+</html>
