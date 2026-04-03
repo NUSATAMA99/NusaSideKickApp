@@ -46,7 +46,7 @@ src/
 │   └── Utilities/
 │       └── Security.gs           # Security & validation utilities
 ├── Frontend/
-│   ├── Index.html               # Main HTML (to be refactored)
+│   ├── index.html               # Main HTML (to be refactored)
 │   ├── js/
 │   │   ├── api-client.js        # API communication module
 │   │   ├── state-manager.js     # Application state management

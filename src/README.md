@@ -134,7 +134,7 @@ src/
 │   └── Utilities/
 │       └── Security.gs               # Validation & security
 ├── Frontend/                         # Frontend application
-│   ├── Index.html                    # Main HTML
+│   ├── index.html                    # Main HTML
 │   ├── js/                           # JavaScript modules
 │   │   ├── api-client.js             # Backend communication
 │   │   ├── state-manager.js          # State management
@@ -438,7 +438,7 @@ Frontend receives & displays data
 | `Main.gs` | Main router and request handler |
 | `SheetManager.gs` | Database operations and business logic |
 | `Constant.gs` | Configuration and constants |
-| `Index.html` | Frontend UI and user interactions |
+| `index.html` | Frontend UI and user interactions |
 | `worker.js` | Cloudflare Worker CORS proxy |
 | `appsscript.json` | Apps Script manifest |
 
