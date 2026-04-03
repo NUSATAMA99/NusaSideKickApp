@@ -11,7 +11,8 @@
 
 const APIClient = (() => {
   // Private configuration
-  const API_ENDPOINT = "https://script.google.com/macros/s/AKfycbxR-G_C0m-cOOle3ED1vcVZn-s6iOTdB_0Ja-4yPDHB32L8vDYP-Vpv8Q4jCp7ifl9k/exec";
+  // Point to Cloudflare Worker (CORS proxy) instead of direct Google Apps Script
+  const API_ENDPOINT = "https://thesidekick.nusatama4dev.workers.dev/api";
   const TIMEOUT = 30000;
 
   /**
