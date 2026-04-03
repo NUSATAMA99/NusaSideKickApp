@@ -1141,12 +1141,34 @@
         }
 
         function populateDropdown(id, items) {
-            const select = document.getElementById(id); const currentVal = select.value;
+            const select = document.getElementById(id); 
+            const currentVal = select.value;
             let defaultText = "Select Option...";
             if (id === 'f_vendor') defaultText = "Choose Vendor / Ally...";
             if (id === 'payBankSelect' || id === 'vendorPayBankSelect') defaultText = "Select Vault...";
             select.innerHTML = `<option value="">${defaultText}</option>`;
-            if(items && Array.isArray(items)) { items.forEach(item => { const opt = document.createElement('option'); opt.value = item; opt.innerText = item; select.appendChild(opt); }); }
+            
+            if(items && Array.isArray(items)) { 
+                items.forEach(item => { 
+                    const opt = document.createElement('option');
+                    
+                    // Handle both string items and object items with Name property
+                    if (typeof item === 'string') {
+                        opt.value = item;
+                        opt.innerText = item;
+                    } else if (typeof item === 'object' && item.Name) {
+                        opt.value = item.Name;
+                        opt.innerText = item.Name;
+                    } else {
+                        // Fallback if unknown format
+                        opt.value = String(item);
+                        opt.innerText = String(item);
+                    }
+                    
+                    select.appendChild(opt); 
+                }); 
+            }
+            
             if (currentVal) select.value = currentVal;
         }
 
@@ -1222,8 +1244,8 @@
         function renderVendorFilters() {
             let allTags = new Set();
             vendorBankGlobal.forEach(v => {
-                if(v.tags && Array.isArray(v.tags)) {
-                    v.tags.forEach(t => { if(t) allTags.add(t.toUpperCase()); });
+                if(v.Tags && Array.isArray(v.Tags)) {
+                    v.Tags.forEach(t => { if(t) allTags.add(t.toUpperCase()); });
                 }
             });
             
@@ -1256,7 +1278,7 @@
             
             let filtered = vendorBankGlobal;
             if (activeVendorTags.length > 0) {
-                filtered = vendorBankGlobal.filter(v => activeVendorTags.some(tag => v.tags.map(t=>t.toUpperCase()).includes(tag)));
+                filtered = vendorBankGlobal.filter(v => activeVendorTags.some(tag => v.Tags.map(t=>t.toUpperCase()).includes(tag)));
             }
             
             if (filtered.length === 0) {
@@ -1266,19 +1288,19 @@
 
             filtered.forEach(v => {
                 let tagHtml = '';
-                if(v.tags && Array.isArray(v.tags)) {
-                    tagHtml = v.tags.filter(t=>t).map(t => `<span class="bg-indigo-50 text-indigo-600 border border-indigo-100 px-2.5 py-1 rounded-lg text-[8px] font-black uppercase tracking-widest">#${t}</span>`).join('');
+                if(v.Tags && Array.isArray(v.Tags)) {
+                    tagHtml = v.Tags.filter(t=>t).map(t => `<span class="bg-indigo-50 text-indigo-600 border border-indigo-100 px-2.5 py-1 rounded-lg text-[8px] font-black uppercase tracking-widest">#${t}</span>`).join('');
                 }
                 
                 let contactHtml = '';
-                if (v.contact) {
-                    contactHtml = `<a href="${formatWaLink(v.contact)}" target="_blank" class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center hover:bg-emerald-500 hover:text-white hover:scale-105 active:scale-95 transition-all shadow-sm shrink-0 border border-emerald-200"><i data-lucide="phone" class="w-5 h-5"></i></a>`;
+                if (v.Contact) {
+                    contactHtml = `<a href="${formatWaLink(v.Contact)}" target="_blank" class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center hover:bg-emerald-500 hover:text-white hover:scale-105 active:scale-95 transition-all shadow-sm shrink-0 border border-emerald-200"><i data-lucide="phone" class="w-5 h-5"></i></a>`;
                 }
 
                 cont.innerHTML += `
                     <div class="flex justify-between items-center bg-white border-2 border-slate-100 p-5 rounded-[2rem] shadow-sm hover:border-indigo-200 transition-colors">
                         <div class="overflow-hidden pr-4">
-                            <h5 class="font-black text-slate-800 text-sm truncate">${v.name}</h5>
+                            <h5 class="font-black text-slate-800 text-sm truncate">${v.Name}</h5>
                             <div class="flex flex-wrap gap-1.5 mt-2">${tagHtml}</div>
                         </div>
                         ${contactHtml}
@@ -1328,7 +1350,7 @@
             const contact = document.getElementById('v_contact').value;
             if (!name) return showGameError('Missing Info', 'Nama Vendor wajib diisi!');
 
-            const payload = { action: "addVendor", vendorName: name, contact: contact, tags: newVendorTags };
+            const payload = { action: "addVendor", name: name, contact: contact, tags: newVendorTags };
 
             try { 
                 const data = await apiCallWithProgress(payload, 'Registering Vendor... 🏭'); 
@@ -1932,8 +1954,8 @@
         }
 
         function openAddSheet() { document.getElementById('overlay').classList.remove('hidden'); document.getElementById('addSheet').classList.add('open'); }
-        function openAddClientSheet() { document.getElementById('addClientSheet').classList.add('open'); }
-        function closeAddClientSheet() { document.getElementById('addClientSheet').classList.remove('open'); }
+        function openAddClientSheet() { document.getElementById('overlay').classList.remove('hidden'); document.getElementById('addClientSheet').classList.add('open'); }
+        function closeAddClientSheet() { document.getElementById('overlay').classList.add('hidden'); document.getElementById('addClientSheet').classList.remove('open'); }
         function openPaySheet() { document.getElementById('overlay').classList.remove('hidden'); document.getElementById('paySheet').classList.add('open'); }
         function openPayVendorSheet() { document.getElementById('overlay').classList.remove('hidden'); document.getElementById('payVendorSheet').classList.add('open'); }
         
