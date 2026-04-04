@@ -31,6 +31,8 @@ const APIClient = (() => {
         ...payload
       };
 
+      console.log('🔄 API Request:', { action, endpoint: API_ENDPOINT, payload });
+
       const response = await fetch(API_ENDPOINT, {
         method: "POST",
         headers: {
@@ -42,11 +44,14 @@ const APIClient = (() => {
 
       clearTimeout(timeoutId);
 
+      console.log('📡 API Response Status:', response.status, response.statusText);
+
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
 
       const data = await response.json();
+      console.log('✅ API Response Data:', action, data);
       return data;
 
     } catch (error) {

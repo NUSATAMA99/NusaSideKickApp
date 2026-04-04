@@ -1,0 +1,15 @@
+{
+  "name": "sidekick-tracker",
+  "version": "1.0.0",
+  "description": "Sidekick Tracker - Google Apps Script Project",
+  "scripts": {
+    "build:css": "tailwindcss -i ./Frontend/css/input.css -o ./Frontend/css/tailwind.css --minify",
+    "watch:css": "tailwindcss -i ./Frontend/css/input.css -o ./Frontend/css/tailwind.css --watch",
+    "deploy": "npm run build:css && clasp push"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.3.0",
+    "postcss": "^8.4.31",
+    "autoprefixer": "^10.4.16"
+  }
+}
